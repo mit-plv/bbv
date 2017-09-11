@@ -1,6 +1,9 @@
 (** Fixed precision machine words *)
 
 Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.omega.Omega.
+Require Import Coq.Logic.Eqdep_dec.
+Require Import Coq.setoid_ring.Ring.
+Require Import Coq.setoid_ring.Ring_polynom.
 Require Import bbv.Nomega.
 
 Set Implicit Arguments.
@@ -18,7 +21,6 @@ Fixpoint wordToNat sz (w : word sz) : nat :=
     | WS false w' => (wordToNat w') * 2
     | WS true w' => S (wordToNat w' * 2)
   end.
-Arguments wordToNat : simpl nomatch.
 
 Fixpoint wordToNat' sz (w : word sz) : nat :=
   match w with
@@ -49,8 +51,8 @@ Fixpoint natToWord (sz n : nat) : word sz :=
 Fixpoint wordToN sz (w : word sz) : N :=
   match w with
     | WO => 0
-    | WS false _ w' => N.double (wordToN w')
-    | WS true _ w' => N.succ_double (wordToN w')
+    | WS false w' => N.double (wordToN w')
+    | WS true w' => N.succ_double (wordToN w')
   end%N.
 
 Definition Nmod2 (n : N) : bool :=
@@ -231,7 +233,7 @@ Fixpoint wones (sz : nat) : word sz :=
 Fixpoint wmsb sz (w : word sz) (a : bool) : bool :=
   match w with
     | WO => a
-    | WS b _ x => wmsb x b
+    | WS b x => wmsb x b
   end.
 
 Definition whd sz (w : word (S sz)) : bool :=
@@ -240,7 +242,7 @@ Definition whd sz (w : word (S sz)) : bool :=
                                | S _ => bool
                              end with
     | WO => tt
-    | WS b _ _ => b
+    | WS b _ => b
   end.
 
 Definition wtl sz (w : word (S sz)) : word sz :=
@@ -299,7 +301,7 @@ Definition weq : forall sz (x y : word sz), {x = y} + {x <> y}.
   refine (fix weq sz (x : word sz) : forall y : word sz, {x = y} + {x <> y} :=
     match x in word sz return forall y : word sz, {x = y} + {x <> y} with
       | WO => fun _ => left _ _
-      | WS b _ x' => fun y => if bool_dec b (whd y)
+      | WS b x' => fun y => if bool_dec b (whd y)
         then if weq _ x' (wtl y) then left _ _ else right _ _
         else right _ _
     end); clear weq.
@@ -319,7 +321,7 @@ Defined.
 Fixpoint weqb sz (x : word sz) : word sz -> bool :=
   match x in word sz return word sz -> bool with
     | WO => fun _ => true
-    | WS b _ x' => fun y =>
+    | WS b x' => fun y =>
       if eqb b (whd y)
       then if @weqb _ x' (wtl y) then true else false
       else false
@@ -1277,7 +1279,7 @@ Theorem wmult_unit_r : forall sz (x : word sz), x ^* natToWord sz 1 = x.
 Proof.
   intros.
   rewrite wmult_comm.
-  apply wmult_unit_l.
+  apply wmult_unit.
 Qed.
 
 Theorem wmult_assoc : forall sz (x y z : word sz), x ^* (y ^* z) = x ^* y ^* z.
