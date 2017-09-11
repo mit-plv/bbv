@@ -2,6 +2,7 @@
 
 Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.omega.Omega.
 Require Import Coq.Logic.Eqdep_dec.
+Require Import Program.Tactics.
 Require Import Coq.setoid_ring.Ring.
 Require Import Coq.setoid_ring.Ring_polynom.
 Require Import bbv.Nomega.
@@ -1965,7 +1966,6 @@ Lemma wordToNat_natToWord_idempotent' : forall sz n,
   (n < pow2 sz)%nat
   -> wordToNat (natToWord sz n) = n.
 Proof.
-  unfold goodSize.
   intros.
   destruct (wordToNat_natToWord sz n); intuition.
   destruct x.
@@ -2042,7 +2042,6 @@ Proof.
   intros.
   rewrite wplus_alt. unfold wplusN, wordBinN. simpl.
   assert ((1 < pow2 sz)%nat).
-  unfold goodSize.
   inversion H.
   simpl; auto.
   apply one_lt_pow2.
@@ -2237,7 +2236,6 @@ Proof.
   rewrite wminus_Alt2; auto.
   unfold wordBinN.
   eapply wordToNat_natToWord_idempotent'.
-  unfold goodSize.
   apply lt_minus.
   apply wle_le; auto.
   apply wordToNat_bound.
