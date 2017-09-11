@@ -2039,7 +2039,7 @@ Proof.
   auto.
 Qed.
 
-Lemma wlt_lt': forall sz a b, goodSize sz a
+Lemma wlt_lt': forall sz a b, (a < pow2 sz)%nat
   -> natToWord sz a < b
   -> (wordToNat (natToWord sz a) < wordToNat b)%nat.
 Proof.
@@ -2088,7 +2088,7 @@ Qed.
 Hint Resolve lt_word_le_nat.
 
 Lemma wordToNat_natToWord_idempotent' : forall sz n,
-  goodSize sz n
+  (n < pow2 sz)%nat
   -> wordToNat (natToWord sz n) = n.
 Proof.
   unfold goodSize.
@@ -2102,7 +2102,7 @@ Proof.
 Qed.
 
 Lemma le_word_le_nat': forall (sz:nat) n m,
-  goodSize sz n ->
+  (n < pow2 sz)%nat ->
   (natToWord sz n <= m)%word ->
   (n <= wordToNat m)%nat.
 Proof.
@@ -2167,7 +2167,7 @@ Lemma natplus1_wordplus1_eq:
 Proof.
   intros.
   rewrite wplus_alt. unfold wplusN, wordBinN. simpl.
-  assert (goodSize sz 1).
+  assert ((1 < pow2 sz)%nat).
   unfold goodSize.
   inversion H.
   simpl; auto.
