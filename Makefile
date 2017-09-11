@@ -13,7 +13,7 @@ COQDOC=$(COQBIN)coqdoc
 %.vo: %.v
 	$(COQC) $(COQFLAGS) $*.v 
 
-Word.vo: Nomega.vo
+Word.vo: Nomega.vo NatLib.vo
 
 all: Word.vo
 
