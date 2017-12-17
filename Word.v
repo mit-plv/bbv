@@ -1632,7 +1632,7 @@ Ltac word_contra1 := match goal with
 Open Scope word_scope.
 
 (** * Signed Logic **)
-Fixpoint wordToZ sz (w : word sz) : Z :=
+Definition wordToZ sz (w : word sz) : Z :=
   if wmsb w true then
     (** Negative **)
     match wordToN (wneg w) with
