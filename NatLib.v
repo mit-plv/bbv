@@ -1,5 +1,11 @@
 Require Import Coq.Arith.Div2.
 Require Import Coq.omega.Omega.
+Require Import Coq.NArith.NArith.
+Require Import Coq.ZArith.ZArith.
+
+Require Export bbv.Nomega.
+
+Set Implicit Arguments.
 
 Fixpoint mod2 (n : nat) : bool :=
   match n with
@@ -34,6 +40,12 @@ Fixpoint pow2 (n : nat) : nat :=
     | O => 1
     | S n' => 2 * pow2 n'
   end.
+
+Fixpoint Npow2 (n : nat) : N :=
+  match n with
+    | O => 1
+    | S n' => 2 * Npow2 n'
+  end%N.
 
 Theorem untimes2 : forall n, n + (n + 0) = 2 * n.
   auto.
@@ -208,7 +220,6 @@ Proof.
   omega.
 Qed.
 
-
 Lemma pow2_inc : forall n m,
   0 < n -> n < m ->
     pow2 n < pow2 m.
@@ -292,3 +303,78 @@ Proof.
     apply Even.even_mult_l; repeat constructor.
 Qed.
 
+Lemma pred_add:
+  forall n, n <> 0 -> pred n + 1 = n.
+Proof.
+  intros; rewrite pred_of_minus; omega.
+Qed.
+
+Lemma pow2_zero: forall sz, (pow2 sz > 0)%nat.
+Proof.
+  induction sz; simpl; auto; omega.
+Qed.
+
+Theorem Npow2_nat : forall n, nat_of_N (Npow2 n) = pow2 n.
+  induction n as [|n IHn]; simpl; intuition.
+  rewrite <- IHn; clear IHn.
+  case_eq (Npow2 n); intuition.
+  rewrite untimes2.
+  match goal with
+  | [ |- context[Npos ?p~0] ]
+    => replace (Npos p~0) with (Ndouble (Npos p)) by reflexivity
+  end.
+  apply nat_of_Ndouble.
+Qed.
+
+Theorem pow2_N : forall n, Npow2 n = N.of_nat (pow2 n).
+Proof.
+  intro n. apply nat_of_N_eq. rewrite Nat2N.id. apply Npow2_nat.
+Qed.
+
+Lemma pow2_S_z:
+  forall n, Z.of_nat (pow2 (S n)) = (2 * Z.of_nat (pow2 n))%Z.
+Proof.
+  intros.
+  replace (2 * Z.of_nat (pow2 n))%Z with
+      (Z.of_nat (pow2 n) + Z.of_nat (pow2 n))%Z by omega.
+  simpl.
+  repeat rewrite Nat2Z.inj_add.
+  ring.
+Qed.
+
+Lemma pow2_le:
+  forall n m, (n <= m)%nat -> (pow2 n <= pow2 m)%nat.
+Proof.
+  intros.
+  assert (exists s, n + s = m) by (exists (m - n); omega).
+  destruct H0; subst.
+  rewrite pow2_add_mul.
+  pose proof (pow2_zero x).
+  replace (pow2 n) with (pow2 n * 1) at 1 by omega.
+  apply mult_le_compat_l.
+  omega.
+Qed.
+
+Lemma Zabs_of_nat:
+  forall n, Z.abs (Z.of_nat n) = Z.of_nat n.
+Proof.
+  unfold Z.of_nat; intros.
+  destruct n; auto.
+Qed.
+
+Lemma Npow2_not_zero:
+  forall n, Npow2 n <> 0%N.
+Proof.
+  induction n; simpl; intros; [discriminate|].
+  destruct (Npow2 n); auto.
+  discriminate.
+Qed.
+
+Lemma Npow2_S:
+  forall n, Npow2 (S n) = (Npow2 n + Npow2 n)%N.
+Proof.
+  simpl; intros.
+  destruct (Npow2 n); auto.
+  rewrite <-Pos.add_diag.
+  reflexivity.
+Qed.
