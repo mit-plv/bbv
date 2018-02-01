@@ -131,6 +131,31 @@ Theorem div2_bound : forall k n,
   omega.
 Qed.
 
+Lemma two_times_div2_bound: forall n, 2 * Nat.div2 n <= n.
+Proof.
+  eapply strong. intros n IH.
+  destruct n.
+  - constructor.
+  - destruct n.
+    + simpl. constructor. constructor. 
+    + simpl (Nat.div2 (S (S n))).
+      specialize (IH n). omega.
+Qed.
+
+Lemma div2_compat_lt_l: forall a b, b < 2 * a -> Nat.div2 b < a.
+Proof.
+  induction a; intros.
+  - omega.
+  - destruct b.
+    + simpl. omega.
+    + destruct b.
+      * simpl. omega.
+      * simpl. apply lt_n_S. apply IHa. omega.
+Qed.
+
+(* otherwise b is made implicit, while a isn't, which is weird *)
+Arguments div2_compat_lt_l {_} {_} _.
+
 Lemma pow2_add_mul: forall a b,
   pow2 (a + b) = (pow2 a) * (pow2 b).
 Proof.
@@ -279,6 +304,34 @@ Proof.
   apply mod2_S_eq; auto.
 Qed.
 
+Lemma mod2sub: forall a b,
+  b <= a ->
+  mod2 (a - b) = xorb (mod2 a) (mod2 b).
+Proof.
+  intros. remember (a - b) as c. revert dependent b. revert a. revert c.
+  change (forall c,
+    (fun c => forall a b, b <= a -> c = a - b -> mod2 c = xorb (mod2 a) (mod2 b)) c).
+  apply strong.
+  intros c IH a b AB N.
+  destruct c.
+  - assert (a=b) by omega. subst. rewrite Bool.xorb_nilpotent. reflexivity.
+  - destruct c.
+    + assert (a = S b) by omega. subst a. simpl (mod2 1). rewrite mod2_S_not.
+      destruct (mod2 b); reflexivity.
+    + destruct a; [omega|].
+      destruct a; [omega|].
+      simpl.
+      apply IH; omega.
+Qed.
+
+Theorem mod2_pow2_twice: forall n,
+  mod2 (pow2 n + (pow2 n + 0)) = false.
+Proof.
+  intros.
+  replace (pow2 n + (pow2 n + 0)) with (2 * pow2 n) by omega.
+  apply mod2_double.
+Qed.
+
 Theorem div2_plus_2 : forall n k,
   div2 (n + 2 * k) = div2 n + k.
 Proof.
@@ -378,3 +431,19 @@ Proof.
   rewrite <-Pos.add_diag.
   reflexivity.
 Qed.
+
+Lemma minus_minus: forall a b c,
+  c <= b <= a ->
+  a - (b - c) = a - b + c.
+Proof. intros. omega. Qed.
+
+Lemma even_odd_destruct: forall n,
+  (exists a, n = 2 * a) \/ (exists a, n = 2 * a + 1).
+Proof.
+  induction n.
+  - left. exists 0. reflexivity.
+  - destruct IHn as [[a E] | [a E]].
+    + right. exists a. omega.
+    + left. exists (S a). omega.
+Qed.
+

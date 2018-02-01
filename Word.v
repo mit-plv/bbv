@@ -1956,6 +1956,12 @@ Proof.
   apply wminus_inv.
 Qed.
 
+Lemma wneg_zero': forall sz,
+  wneg (natToWord sz 0) = natToWord sz 0.
+Proof.
+  intros. apply wneg_zero. apply wneg_idempotent.
+Qed.
+
 Lemma wplus_one_neq: forall {sz} (w: word (S sz)), w ^+ (natToWord (S sz) 1) <> w.
 Proof.
   intros; intro Hx.
@@ -1993,6 +1999,21 @@ Lemma pow2_minus_one_wones: forall {sz} (w: word sz),
 Proof.
   intros; rewrite <-wones_pow2_minus_one in H.
   apply wordToNat_inj; auto.
+Qed.
+
+Lemma wones_natToWord: forall sz,
+  wones sz = $ (pow2 sz - 1).
+Proof.
+  induction sz.
+  - reflexivity.
+  - unfold wones. fold wones. rewrite IHsz.
+    unfold natToWord at 2. fold natToWord. f_equal.
+    + rewrite mod2sub.
+      * simpl. rewrite mod2_pow2_twice. reflexivity.
+      * pose proof (zero_lt_pow2 (S sz)). omega.
+    + f_equal. unfold pow2 at 2. fold pow2.
+      rewrite <- (div2_S_double (pow2 sz - 1)). f_equal.
+      pose proof (zero_lt_pow2 sz). omega.
 Qed.
 
 Lemma wones_wneg_one: forall {sz}, wones sz = ^~ (natToWord sz 1).
@@ -2617,14 +2638,6 @@ Proof.
   omega.
 Qed.
 
-Theorem mod2_pow2_twice: forall n,
-  mod2 (pow2 n + (pow2 n + 0)) = false.
-Proof.
-  intros.
-  replace (pow2 n + (pow2 n + 0)) with (2 * pow2 n) by omega.
-  apply mod2_double.
-Qed.
-
 Theorem wbit_or_other : forall sz sz' (n1 n2 : word sz'), (wordToNat n1 < sz)%nat
   -> (wordToNat n2 < sz)%nat
   -> (n1 <> n2)
@@ -2751,6 +2764,54 @@ Lemma wmsb_wones:
   forall sz, wmsb (wones (S sz)) false = true.
 Proof.
   induction sz; cbn; auto.
+Qed.
+
+Lemma wmsb_0: forall sz (m: word (S sz)) default,
+  (# m < pow2 sz)%nat ->
+  @wmsb (S sz) m default = false.
+Proof.
+  induction sz; intros.
+  - simpl in *. assert (#m = 0) as N by omega.
+    rewrite <- (roundTrip_0 1) in N.
+    apply wordToNat_inj in N. subst m.
+    simpl. reflexivity.
+  - pose proof (shatter_word_S m) as P.
+    destruct P as [b [m0 E]]. subst.
+    unfold wmsb. fold wmsb.
+    apply IHsz.
+    simpl in H. destruct b; omega.
+Qed.
+
+Lemma wmsb_1: forall sz (m: word (S sz)) default,
+  pow2 sz <= # m < 2 * pow2 sz ->
+  @wmsb (S sz) m default = true.
+Proof.
+  induction sz; intros.
+  - simpl in *. assert (#m = 1) as N by omega.
+    rewrite <- (roundTrip_1 1) in N.
+    apply (wordToNat_inj m ($ 1)) in N. subst m.
+    simpl. reflexivity.
+  - pose proof (shatter_word_S m) as P.
+    destruct P as [b [m0 E]]. subst.
+    unfold wmsb. fold wmsb.
+    apply IHsz.
+    simpl in H. destruct b; omega.
+Qed.
+
+Lemma wmsb_0_natToWord: forall sz n default,
+  (2 * n < pow2 (S sz))%nat ->
+  @wmsb (S sz) (natToWord (S sz) n) default = false.
+Proof.
+  intros. apply wmsb_0.
+  pose proof (wordToNat_natToWord_le (S sz) n). unfold pow2 in H. fold pow2 in H. omega.
+Qed.
+
+Lemma wmsb_1_natToWord: forall sz n default,
+  pow2 sz <= n < 2 * pow2 sz ->
+  @wmsb (S sz) (natToWord (S sz) n) default = true.
+Proof.
+  intros. apply wmsb_1.
+  rewrite wordToNat_natToWord_idempotent'; simpl; omega.
 Qed.
 
 Lemma wordToN_wzero':
@@ -3853,6 +3914,39 @@ Proof.
       repeat rewrite wordToZ_WS_0.
       rewrite IHw.
       reflexivity.
+Qed.
+
+Lemma sext_natToWord': forall sz1 sz2 n,
+  (2 * n < pow2 sz1)%nat ->
+  sext (natToWord sz1 n) sz2 = natToWord (sz1 + sz2) n.
+Proof.
+  induction sz1; intros.
+  - simpl. unfold sext. simpl. unfold wzero. unfold pow2 in *.
+    assert (n=0) by omega. subst n. reflexivity.
+  - unfold sext in *.
+    assert (@wmsb (S sz1) (natToWord (S sz1) n) false = false) as E by
+      (apply wmsb_0_natToWord; assumption).
+    rewrite E. clear E.
+    simpl. unfold natToWord. f_equal. fold natToWord.
+    specialize (IHsz1 sz2 (Nat.div2 n)).
+    rewrite <- IHsz1.
+    + assert (@wmsb sz1 (natToWord sz1 (Nat.div2 n)) false = false) as E. {
+        destruct sz1.
+        - reflexivity.
+        - apply wmsb_0_natToWord. unfold pow2 in *. fold pow2 in *.
+          assert ((2 * Nat.div2 n <= n)%nat) by apply two_times_div2_bound. omega.
+      }
+      rewrite E. clear E. reflexivity.
+    + replace (pow2 (S sz1)) with (2 * (pow2 sz1)) in H.
+      * assert ((2 * Nat.div2 n <= n)%nat) by apply two_times_div2_bound. omega.
+      * reflexivity.
+Qed.
+
+Lemma sext_natToWord: forall sz2 sz1 sz n (e: sz1 + sz2 = sz),
+  (2 * n < pow2 sz1)%nat ->
+  eq_rect (sz1 + sz2) word (sext (natToWord sz1 n) sz2) sz e = natToWord sz n.
+Proof.
+  intros. rewrite sext_natToWord' by assumption. rewrite e. reflexivity.
 Qed.
 
 Lemma wordToNat_split1:
