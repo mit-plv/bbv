@@ -219,6 +219,11 @@ Proof.
   omega.
 Qed.
 
+Lemma one_le_pow2 : forall sz, 1 <= pow2 sz.
+Proof.
+  intros. pose proof (zero_lt_pow2 sz). omega.
+Qed.
+
 Lemma mul2_add : forall n, n * 2 = n + n.
 Proof.
   induction n; firstorder.

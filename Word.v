@@ -547,6 +547,14 @@ Proof.
   omega.
 Qed.
 
+Lemma natToWord_times2: forall sz x,
+  ((natToWord sz x)~0)%word = natToWord (S sz) (2 * x).
+Proof.
+  intros. unfold natToWord. fold natToWord. f_equal.
+  - symmetry. apply mod2_double.
+  - rewrite div2_double. reflexivity.
+Qed.
+
 Theorem WS_neq : forall b1 b2 sz (w1 w2 : word sz),
   (b1 <> b2 \/ w1 <> w2)
   -> WS b1 w1 <> WS b2 w2.
@@ -3949,6 +3957,128 @@ Proof.
   intros. rewrite sext_natToWord' by assumption. rewrite e. reflexivity.
 Qed.
 
+Lemma sext_wneg_natToWord'': forall sz1 sz2 n,
+  pow2 sz1 <= 2 * n < pow2 (S sz1) ->
+  sext (natToWord sz1 n) sz2 = natToWord (sz1 + sz2) (pow2 (sz1+sz2) - (pow2 sz1 - n)).
+Proof.
+  induction sz1; intros.
+  - unfold pow2 in H. omega. (* contradiction *)
+  - unfold sext in *.
+    assert (@wmsb (S sz1) (natToWord (S sz1) n) false = true) as E. {
+      apply wmsb_1.
+      rewrite wordToNat_natToWord_idempotent';
+      (unfold pow2 in *; fold pow2 in *; omega).
+    }
+    rewrite E.
+    match goal with
+    | |- _ = $ ?a => remember a as b
+    end.
+    simpl. unfold natToWord. f_equal.
+    + subst b. rewrite mod2sub.
+      * rewrite mod2sub.
+        { replace (S sz1 + sz2) with (S (sz1 + sz2)) by omega.
+          simpl.
+          do 2 rewrite mod2_pow2_twice.
+          do 2 rewrite Bool.xorb_false_l.
+          reflexivity.
+        }
+        simpl in *. omega.
+      * rewrite pow2_add_mul in *. unfold pow2 in *. fold pow2 in *.
+        apply Nat.le_trans with (m := 2 * pow2 sz1); [omega|].
+        rewrite <- mult_assoc.
+        apply mult_le_compat_l.
+        rewrite <- Nat.mul_1_r at 1.
+        apply mult_le_compat_l.
+        apply one_le_pow2.
+    + fold natToWord.
+      specialize (IHsz1 sz2 (Nat.div2 n)).
+      assert (Nat.div2 b = pow2 (sz1 + sz2) - (pow2 sz1 - (Nat.div2 n))) as D2. {
+        rewrite minus_minus.
+        - subst b. replace (S sz1 + sz2) with (S (sz1 + sz2)) by omega.
+          unfold pow2. fold pow2.
+          rewrite minus_minus.
+          * rewrite <- Nat.mul_sub_distr_l. 
+            rewrite <- (Nat.add_comm n).
+            rewrite div2_plus_2.
+            apply Nat.add_comm.
+          * rewrite pow2_add_mul. clear IHsz1. unfold pow2 in *. fold pow2 in *.
+            split; [omega|].
+            apply mult_le_compat_l.
+            rewrite <- Nat.mul_1_r at 1.
+            apply mult_le_compat_l.
+            apply one_le_pow2.
+        - unfold pow2 in H. fold pow2 in H.
+          split.
+          * pose proof (@div2_compat_lt_l (pow2 sz1) n) as P. omega.
+          * rewrite pow2_add_mul. clear IHsz1.
+            rewrite <- Nat.mul_1_r at 1.
+            apply mult_le_compat_l.
+            apply one_le_pow2.
+      }
+      rewrite D2.
+      destruct sz1 as [|sz1'].
+      * simpl in H. assert (n=1) by omega. subst n. simpl in D2. simpl.
+        apply wones_natToWord.
+      * assert (n <= S (2 * Nat.div2 n))%nat. {
+          destruct (even_odd_destruct n) as [[m C]|[m C]]; subst n.
+          - rewrite Nat.div2_double. constructor. constructor.
+          - replace (2 * m + 1) with (S (2 * m)) by omega. rewrite Nat.div2_succ_double.
+            constructor.
+        }
+       rewrite <- IHsz1.
+        { assert (@wmsb (S sz1') (natToWord (S sz1') (Nat.div2 n)) false = true) as F. {
+          apply wmsb_1_natToWord.
+          unfold pow2 in *. fold pow2 in *.
+          assert (2 * Nat.div2 n <= n)%nat by apply two_times_div2_bound.
+          clear -H H0 H1.
+          omega. }
+          { rewrite F. reflexivity. }
+        }
+        { assert (2 * Nat.div2 n <= n)%nat by apply two_times_div2_bound.
+          clear -H H0 H1.
+          unfold pow2 in *. fold pow2 in *.
+          omega. }
+Qed.
+
+Lemma sext_wneg_natToWord': forall sz1 sz2 n,
+  (2 * n < pow2 sz1)%nat ->
+  sext (wneg (natToWord sz1 n)) sz2 = wneg (natToWord (sz1 + sz2) n).
+Proof.
+  intros. rewrite wneg_alt. unfold wnegN.
+  destruct n as [|n].
+  - rewrite roundTrip_0. rewrite Nat.sub_0_r. rewrite natToWord_pow2.
+    unfold sext.
+    assert (wmsb (natToWord sz1 0) false = false) as W. {
+      destruct sz1.
+      + simpl. reflexivity.
+      + apply wmsb_0_natToWord. assumption.
+    }
+    rewrite W.
+    rewrite combine_wzero.
+    symmetry.
+    apply wneg_zero'.
+  - rewrite sext_wneg_natToWord''.
+    + rewrite wneg_alt. unfold wnegN.
+      rewrite wordToNat_natToWord_idempotent' by omega.
+      rewrite wordToNat_natToWord_idempotent'.
+      * replace (pow2 sz1 - (pow2 sz1 - S n)) with (S n) by omega.
+        reflexivity.
+      * rewrite pow2_add_mul.
+        apply Nat.le_trans with (m := pow2 sz1); [omega|].
+        rewrite <- Nat.mul_1_r at 1.
+        apply mult_le_compat_l.
+        apply one_le_pow2.
+    + rewrite wordToNat_natToWord_idempotent' by omega.
+      simpl. omega.
+Qed.
+
+Lemma sext_wneg_natToWord: forall sz2 sz1 sz n (e: sz1 + sz2 = sz),
+  (2 * n < pow2 sz1)%nat ->
+  eq_rect (sz1 + sz2) word (sext (wneg (natToWord sz1 n)) sz2) sz e = wneg (natToWord sz n).
+Proof.
+  intros. rewrite sext_wneg_natToWord' by assumption. rewrite e. reflexivity.
+Qed.
+
 Lemma wordToNat_split1:
   forall sz1 sz2 (w: word (sz1 + sz2)),
     wordToNat (split1 _ _ w) =
@@ -4074,6 +4204,48 @@ Proof.
   rewrite wordToNat_combine.
   rewrite wordToNat_wzero.
   reflexivity.
+Qed.
+
+Lemma extz_is_mult_pow2: forall sz n d,
+  extz (natToWord sz n) d = natToWord (d + sz) (pow2 d * n).
+Proof.
+  intros. induction d.
+  - unfold extz.
+    rewrite combine_0_n.
+    simpl.
+    f_equal.
+    omega.
+  - unfold extz in *.
+    change (pow2 (S d) * n) with (2 * pow2 d * n).
+    rewrite <- Nat.mul_assoc.
+    change ((S d) + sz) with (S (d + sz)) in *.
+    rewrite <- natToWord_times2.
+    simpl.
+    fold natToWord.
+    f_equal.
+    exact IHd.
+Qed.
+
+Lemma extz_is_mult_pow2_neg: forall sz n d,
+  extz (wneg (natToWord sz n)) d = wneg (natToWord (d + sz) (pow2 d * n)).
+Proof.
+  intros. induction d.
+  - unfold extz.
+    rewrite combine_0_n.
+    simpl.
+    f_equal. f_equal.
+    omega.
+  - unfold extz in *.
+    change (pow2 (S d) * n) with (2 * pow2 d * n).
+    rewrite <- Nat.mul_assoc.
+    change ((S d) + sz) with (S (d + sz)) in *.
+    rewrite <- natToWord_times2.
+    simpl.
+    fold natToWord.
+    f_equal.
+    rewrite wneg_WS_0.
+    f_equal.
+    exact IHd.
 Qed.
 
 Lemma wordToNat_sext_bypass:
