@@ -16,7 +16,7 @@ COQDOC=$(COQBIN)coqdoc
 NatLib.vo: Nomega.vo
 Word.vo: DepEq.vo Nomega.vo NatLib.vo
 
-all: Word.vo
+all: Word.vo DepEqNat.vo
 
 clean:
 	find . -type f \( -name '*.glob' -o -name '*.vo' -o -name '*.aux' \) -delete
