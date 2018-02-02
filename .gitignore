@@ -1,4 +1,5 @@
 *.vo
 *.glob
 *.aux
+*.d
 
