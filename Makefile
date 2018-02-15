@@ -13,12 +13,14 @@ COQDOC=$(COQBIN)coqdoc
 %.vo: %.v
 	$(COQC) $(COQFLAGS) $*.v 
 
-NatLib.vo: Nomega.vo
-Word.vo: DepEq.vo Nomega.vo NatLib.vo
-WordScope.vo: Word.vo
+all: $(patsubst %.v,%.vo,$(wildcard ./*.v))
 
-all: WordScope.vo DepEqNat.vo
+.depend depend:
+	$(COQDEP) >.depend `find . -name "*.v"`
 
 clean:
 	find . -type f \( -name '*.glob' -o -name '*.vo' -o -name '*.aux' \) -delete
+	rm .depend
+
+include .depend
 
