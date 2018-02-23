@@ -35,11 +35,7 @@ Theorem div2_S_double : forall n, div2 (S (2 * n)) = n.
   induction n; simpl; intuition; f_equal; rethink.
 Qed.
 
-Fixpoint pow2 (n : nat) : nat :=
-  match n with
-    | O => 1
-    | S n' => 2 * pow2 n'
-  end.
+Notation pow2 := (Nat.pow 2).
 
 Fixpoint Npow2 (n : nat) : N :=
   match n with
