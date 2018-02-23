@@ -11,42 +11,28 @@ Local Open Scope char_scope.
 
 Local Open Scope N_scope.
 
-Definition hexDigitToN (c : ascii) : option N :=
+Definition binDigitToN (c : ascii) : option N :=
   match c with
     | "0" => Some 0
     | "1" => Some 1
-    | "2" => Some 2
-    | "3" => Some 3
-    | "4" => Some 4
-    | "5" => Some 5
-    | "6" => Some 6
-    | "7" => Some 7
-    | "8" => Some 8
-    | "9" => Some 9
-    | "a" | "A" => Some 10
-    | "b" | "B" => Some 11
-    | "c" | "C" => Some 12
-    | "d" | "D" => Some 13
-    | "e" | "E" => Some 14
-    | "f" | "F" => Some 15
     | _   => None
   end.
 
 Open Scope string_scope.
 
-Fixpoint readHexNAux (s : string) (acc : N) : option N :=
+Fixpoint readBinNAux (s : string) (acc : N) : option N :=
   match s with
     | "" => Some acc
     | String c s' =>
-      match hexDigitToN c with
-        | Some n => readHexNAux s' (16 * acc + n)
+      match binDigitToN c with
+        | Some n => readBinNAux s' (2 * acc + n)
         | None => None
       end
   end.
 
-Definition readHexN (s : string) : option N := readHexNAux s 0.
+Definition readBinN (s : string) : option N := readBinNAux s 0.
 
-Goal readHexN "ff" = Some 255.
+Goal readBinN "11111111" = Some 255.
 Proof. reflexivity. Qed.
 
 Definition forceOption A Err (o : option A) (err : Err) : match o with
@@ -60,16 +46,13 @@ Definition forceOption A Err (o : option A) (err : Err) : match o with
 
 Inductive parseError := ParseError.
 
-Definition hex (s : string) := forceOption N parseError (readHexN s) ParseError.
+Definition bin (s : string) := forceOption N parseError (readBinN s) ParseError.
 
-Goal hex"ff" = 255.
+Goal bin"11111111" = 255.
 Proof. reflexivity. Qed.
 
-Goal hex"a0f" = 2575.
+Goal bin"1011" = 11.
 Proof. reflexivity. Qed.
 
-Goal hex"1O" = ParseError.
-Proof. reflexivity. Qed.
-
-Goal hex"ff34c8e3" = 4281649379.
+Goal bin"1O" = ParseError.
 Proof. reflexivity. Qed.
