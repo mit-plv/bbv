@@ -3,3 +3,4 @@
 *.aux
 *.d
 .depend
+.*.cache
