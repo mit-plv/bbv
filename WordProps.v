@@ -473,7 +473,7 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma wplus_eq_wminus sz (a b c: word sz):
+Lemma move_wplus__wminus sz (a b c: word sz):
   a ^+ b = c <-> a = c ^- b.
 Proof.
   split; intro.
@@ -492,6 +492,78 @@ Proof.
     reflexivity.
 Qed.
 
+Lemma move_wplus_pow2 sz (w1 w2: word (S sz)):
+  w1 = w2 ^+ $(pow2 sz) <->
+  w1 ^+ $(pow2 sz) = w2.
+Proof.
+  split.
+  + intro.
+    apply move_wplus__wminus.
+    rewrite wminus_def.
+    rewrite pow2_wneg.
+    assumption.
+  + intro.
+    apply move_wplus__wminus in H.
+    rewrite <- pow2_wneg.
+    assumption.
+Qed.
+
+Lemma move_wminus_pow2 sz (w1 w2: word (S sz)):
+  w1 = w2 ^- $(pow2 sz) <->
+  w1 ^- $(pow2 sz) = w2.
+Proof.
+  split.
+  + intro.
+    apply <- move_wplus__wminus.
+    rewrite pow2_wneg.
+    assumption.
+  + intro.
+    apply move_wplus__wminus.
+    rewrite <- pow2_wneg.
+    rewrite <- wminus_def.
+    assumption.
+Qed.
+
+Lemma pow2_wzero sz :
+  $(pow2 sz) = wzero sz.
+Proof.
+  apply wordToNat_eq2.
+  rewrite wordToNat_natToWord_eqn.
+  rewrite Nat.mod_same.
+  rewrite wordToNat_wzero; auto.
+  pose proof (zero_lt_pow2 sz) as sth.
+  lia.
+Qed.
+
+Lemma pow2_wplus_wzero sz:
+  $(pow2 sz) ^+ $(pow2 sz) = wzero (sz + 1).
+Proof.
+  apply wordToNat_eq2.
+  rewrite <- natToWord_plus.
+  rewrite <- mul2_add.
+  assert (pow2_1_mul: pow2 1 = 2) by auto.
+  rewrite <- pow2_1_mul at 2.
+  rewrite <- pow2_add_mul.
+  rewrite pow2_wzero; auto.
+Qed.
+  
+Lemma wplus_wplus_pow2 sz (x1 x2 y1 y2: word (sz + 1)):
+  x1 = y1 ^+ $(pow2 sz) ->
+  x2 = y2 ^+ $(pow2 sz) ->
+  x1 ^+ x2 = y1 ^+ y2.
+Proof.
+  intros.
+  rewrite H.
+  rewrite <- wplus_assoc.
+  rewrite wplus_comm.
+  rewrite wplus_comm in H0.
+  rewrite H0.
+  rewrite wplus_assoc.
+  rewrite pow2_wplus_wzero.
+  rewrite wzero_wplus.
+  rewrite wplus_comm.
+  reflexivity.
+Qed.
 
 Lemma wlt_meaning sz (w1 w2: word sz):
   (w1 < w2)%word <-> #w1 < #w2.
