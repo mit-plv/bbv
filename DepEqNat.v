@@ -53,3 +53,14 @@ Proof.
   rewrite nat_cast_same.
   reflexivity.
 Qed.
+
+Lemma nat_cast_cast ni no (pf: ni = no) (P: nat -> Type) (x : P ni):
+  nat_cast P pf x = match pf in _ = Y return P Y with
+                    | eq_refl => x
+                    end.
+Proof.
+  destruct pf.
+  rewrite nat_cast_same.
+  auto.
+Qed.
+ 
