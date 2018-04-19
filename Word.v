@@ -5735,8 +5735,8 @@ Qed.
 
 Close Scope word_scope.
 
-Open Scope word.
-Open Scope nat.
+Open Scope word_scope.
+Local Open Scope nat.
 
 Lemma wzero_wones: forall sz, sz >= 1 ->
                               natToWord sz 0 <> wones sz.
@@ -6471,6 +6471,6 @@ Proof.
 Qed.
 
 
-Close Scope nat.
-Close Scope word.
+Local Close Scope nat.
+Close Scope word_scope.
 
