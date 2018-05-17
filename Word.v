@@ -9,6 +9,18 @@ Require Import bbv.Nomega.
 Require Export bbv.NatLib.
 Require Export bbv.DepEq bbv.DepEqNat.
 
+(** [intuition] means [intuition auto with *]. This makes [intuition] use all hint databases
+    ever declared. In particular, it might start using the HintDb 'real' (imported by Psatz),
+    which contains axioms about the real numbers, to solve goals on nat or Z, so lemmas
+    which should be axiom free will depend on axioms about R for.
+    It's also very fragile and slow.
+    We change this bad default as follows: *)
+Tactic Notation "intuition" tactic3(tactic) := intuition tactic.
+Tactic Notation "intuition" := intuition auto with zarith.
+
+(** [firstorder] means [firstorder auto with *], same problem as with [intuition]. *)
+Global Set Firstorder Solver auto with zarith.
+
 Set Implicit Arguments.
 
 (*! Definitions *)
