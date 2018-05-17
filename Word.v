@@ -1,6 +1,6 @@
 (** Fixed precision machine words *)
 
-Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.omega.Omega Psatz.
+Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.omega.Omega.
 Require Import Coq.Logic.Eqdep_dec Coq.Logic.EqdepFacts.
 Require Import Coq.Program.Tactics Coq.Program.Equality.
 Require Import Coq.setoid_ring.Ring.
@@ -5748,9 +5748,9 @@ Proof.
   unfold wzero in *.
   rewrite roundTrip_0 in *.
   rewrite wones_pow2_minus_one in sth.
-  destruct sz; [lia | ].
+  destruct sz; [omega | ].
   pose proof (NatLib.one_lt_pow2 sz).
-  lia.
+  omega.
 Qed.
 
 Lemma wzero_wplus: forall sz w, wzero sz ^+ w = w.
@@ -5766,7 +5766,7 @@ Proof.
   induction w; simpl; unfold wzero; simpl; intros.
   - tauto.
   - destruct b.
-    + lia.
+    + omega.
     + assert (sth: w <> (natToWord n 0)).
       { intro.
         subst.
@@ -5775,9 +5775,9 @@ Proof.
       assert (sth2: wordToNat w <> 0).
       { intro sth3.
         specialize (IHw sth).
-        lia.
+        omega.
       }
-      lia.
+      omega.
 Qed.
 
 Lemma split2_pow2: forall sz n,
@@ -5791,24 +5791,24 @@ Proof.
   (* pose proof (wordToNat_natToWord sz n). *)
   rewrite wordToNat_natToWord_bound with (bound := wones _).
   - destruct H.
-    assert (sth: pow2 sz <> 0) by lia.
+    assert (sth: pow2 sz <> 0) by omega.
     pose proof (Nat.div_le_mono _ _ (pow2 sz) sth H) as sth2.
     rewrite Nat.div_same in sth2 by auto.
     apply Nat.lt_le_pred in H0.
     pose proof (Nat.div_le_mono _ _ (pow2 sz) sth H0) as sth3.
     rewrite <- Nat.sub_1_r in sth3.
-    assert (sth4: pow2 sz = 1 * pow2 sz) by lia.
+    assert (sth4: pow2 sz = 1 * pow2 sz) by omega.
     rewrite sth4 in sth3 at 2.
-    assert (sth5: 1 * pow2 sz + pow2 sz - 1 = 1 * pow2 sz + (pow2 sz - 1)) by lia.
+    assert (sth5: 1 * pow2 sz + pow2 sz - 1 = 1 * pow2 sz + (pow2 sz - 1)) by omega.
     rewrite sth5 in sth3.
-    rewrite Nat.div_add_l in sth3 by lia.
-    rewrite Nat.div_small with (a := pow2 sz - 1) in sth3 by lia.
-    lia.
+    rewrite Nat.div_add_l in sth3 by omega.
+    rewrite Nat.div_small with (a := pow2 sz - 1) in sth3 by omega.
+    omega.
   - rewrite wones_pow2_minus_one.
-    assert (sth: sz + 1 = S sz) by lia.
+    assert (sth: sz + 1 = S sz) by omega.
     rewrite sth.
     simpl.
-    lia.
+    omega.
 Qed.
 
 Lemma combine_wones_WO sz:
@@ -5828,7 +5828,7 @@ Proof.
   pose proof (wordToNat_nonZero H).
   assert (sth2: 2^sz <= 2 ^ sz - 1 + wordToNat w < 2 ^ (S sz)). {
     pose proof (pow2_zero sz) as sth3.
-    split; simpl; lia.
+    split; simpl; omega.
   }
   apply split2_pow2 in sth2.
   rewrite Nat.mul_0_r.
@@ -5866,11 +5866,11 @@ Proof.
   pose proof (wordToNat_natToWord sz n).
   destruct H as [? [? ?]].
   rewrite H.
-  assert (sth: pow2 sz * x = x * pow2 sz) by lia.
+  assert (sth: pow2 sz * x = x * pow2 sz) by (apply Nat.mul_comm).
   rewrite <- sth in *.
   clear sth.
   pose proof (wordToNat_bound (natToWord sz n)).
-  apply (Nat.mod_unique n (pow2 sz) x (n - pow2 sz * x)); try lia.
+  apply (Nat.mod_unique n (pow2 sz) x (n - pow2 sz * x)); try omega.
 Qed.
 
 Lemma mod_factor a b c:
@@ -5883,7 +5883,7 @@ Proof.
   rewrite H1.
   rewrite Nat.add_mod_idemp_l by auto.
   rewrite Nat.add_mod by auto.
-  assert (sth: b * ((a/b) mod c) = (a/b) mod c * b) by nia.
+  assert (sth: b * ((a/b) mod c) = (a/b) mod c * b) by (apply Nat.mul_comm).
   rewrite sth.
   rewrite Nat.mod_mul by auto.
   rewrite Nat.add_0_r.
@@ -5898,15 +5898,15 @@ Proof.
   rewrite wordToNat_split1.
   rewrite <- wordToNat_plus.
   rewrite ?wordToNat_combine.
-  assert (sth: #w11 + pow2 sz1 * #w12 + (#w21 + pow2 sz1 * #w22) = #w11 + #w21 + pow2 sz1 * (#w12 + #w22)) by lia.
+  assert (sth: #w11 + pow2 sz1 * #w12 + (#w21 + pow2 sz1 * #w22) = #w11 + #w21 + pow2 sz1 * (#w12 + #w22)) by ring.
   rewrite wordToNat_natToWord_eqn.
   rewrite sth.
   rewrite Nat.pow_add_r.
-  assert (pow2 sz1 <> 0) by (pose proof (pow2_zero sz1); intro; lia).
-  assert (pow2 sz2 <> 0) by (pose proof (pow2_zero sz2); intro; lia).
+  assert (pow2 sz1 <> 0) by (pose proof (pow2_zero sz1); intro; omega).
+  assert (pow2 sz2 <> 0) by (pose proof (pow2_zero sz2); intro; omega).
   rewrite mod_factor by auto.
   rewrite Nat.add_mod by auto.
-  assert (sth2: pow2 sz1 * (# w12 + #w22) = (#w12 + #w22) * pow2 sz1) by nia.
+  assert (sth2: pow2 sz1 * (# w12 + #w22) = (#w12 + #w22) * pow2 sz1) by ring.
   rewrite sth2.
   rewrite Nat.mod_mul by auto.
   rewrite Nat.add_0_r.
@@ -5925,10 +5925,10 @@ Lemma div_2 a b:
   a / b = 1.
 Proof.
   intros.
-  assert (sth: b * 1 <= a) by lia.
+  assert (sth: b * 1 <= a) by omega.
   pose proof (Nat.div_le_lower_bound a b 1 H sth).
   pose proof (Nat.div_lt_upper_bound a b 2 H H0).
-  lia.
+  omega.
 Qed.
 
 Lemma mod_sub a b:
@@ -5959,7 +5959,7 @@ Proof.
   rewrite wordToNat_natToWord_idempotent'; auto.
   assert (#a <> 0) by word_omega.
   pose proof (pow2_zero sz).
-  lia.
+  omega.
 Qed.
 
 Lemma wordToNat_wnot sz: forall (a: word sz),
@@ -5976,7 +5976,8 @@ Proof.
   simpl.
   rewrite wordToNat_natToWord_idempotent'; auto.
   pose proof (pow2_zero sz).
-  lia.
+  unfold Pos.to_nat; simpl.
+  omega.
 Qed.
 
 Lemma wzero_wor: forall sz w, w ^| wzero sz = w.
@@ -6065,7 +6066,7 @@ Proof.
   - match goal with
     | |- ((if ?P then _ else _) <= _)%word => destruct P; simpl; auto
     end; [| word_omega].
-    assert (sth: ni < pow2 no) by lia.
+    assert (sth: ni < pow2 no) by omega.
     specialize (IHni sth).
     assert (sth1: natToWord no (S ni) = natToWord no (1 + ni)) by auto.
     rewrite sth1.
@@ -6079,8 +6080,8 @@ Proof.
     end.
     pre_word_omega.
     assert (sth2: no > 0). {
-      destruct no; [|lia].
-      destruct ni; simpl in *; try lia.
+      destruct no; [|omega].
+      destruct ni; simpl in *; try omega.
     }
     rewrite <- ?(@natplus1_wordplus1_eq _ _ (wones no)); auto.
     + pre_word_omega.
@@ -6128,13 +6129,13 @@ Lemma natToWord_nzero sz x:
 Proof.
   intros.
   pre_word_omega.
-  rewrite wordToNat_natToWord_idempotent'; lia.
+  rewrite wordToNat_natToWord_idempotent'; omega.
 Qed.
 
 Lemma pow2_lt_pow2_S:
   forall n, pow2 n < pow2 (n+1).
 Proof.
-  induction n; simpl; lia.
+  induction n; simpl; omega.
 Qed.
 
 Lemma combine_shiftl_plus_n n x:
@@ -6147,12 +6148,12 @@ Proof.
   rewrite ?wordToNat_natToWord_idempotent'; simpl; auto.
   rewrite <- wordToNat_plus.
   pose proof (pow2_lt_pow2_S n) as sth.
-  rewrite ?wordToNat_natToWord_idempotent'; simpl; try lia.
-  rewrite ?wordToNat_natToWord_idempotent'; simpl; try lia.
+  rewrite ?wordToNat_natToWord_idempotent'; simpl; try omega.
+  rewrite ?wordToNat_natToWord_idempotent'; simpl; try omega.
   apply Nat.lt_add_lt_sub_l.
   rewrite Nat.add_1_r.
   simpl.
-  lia.
+  omega.
 Qed.
 
 Lemma combine_natToWord_wzero n:
@@ -6167,7 +6168,7 @@ Proof.
   rewrite Nat.mul_0_r.
   rewrite Nat.add_0_r.
   pose proof (pow2_lt_pow2_S n) as sth2.
-  rewrite ?wordToNat_natToWord_idempotent' by lia.
+  rewrite ?wordToNat_natToWord_idempotent' by omega.
   reflexivity.
 Qed.
 
@@ -6260,7 +6261,7 @@ Proof.
   rewrite Nat.mod_same.
   rewrite wordToNat_wzero; auto.
   pose proof (zero_lt_pow2 sz) as sth.
-  lia.
+  omega.
 Qed.
 
 Lemma pow2_wplus_wzero sz:
@@ -6316,16 +6317,20 @@ Proof.
   rewrite Nat.mul_0_r, Nat.add_0_r.
   rewrite wordToNat_wplus.
   rewrite Nat.mod_small by assumption.
-  assert (sth: #w1 + #w2 + pow2 sz * #w' = #w1 + pow2 sz * #w' + #w2) by lia.
+  assert (sth: #w1 + #w2 + pow2 sz * #w' = #w1 + pow2 sz * #w' + #w2) by ring.
   rewrite <- sth; clear sth.
   rewrite Nat.mod_small; auto.
   rewrite Nat.pow_add_r.
-  assert (sth: pow2 sz' = 1 + (pow2 sz' - 1)) by (pose proof (pow2_zero sz'); lia).
+  assert (sth: pow2 sz' = 1 + (pow2 sz' - 1)) by (pose proof (pow2_zero sz'); omega).
   rewrite sth; clear sth.
   rewrite Nat.mul_add_distr_l.
   rewrite Nat.mul_1_r.
   pose proof (wordToNat_bound w').
-  nia.
+  pose proof (pow2_zero sz).
+  apply Nat.lt_le_pred in H0.
+  rewrite pred_of_minus in H0.
+  pose proof (mult_le_compat_l _ _ (pow2 sz) H0).
+  omega.
 Qed.
 
 Lemma word1_neq (w: word 1):
@@ -6347,9 +6352,9 @@ Proof.
   rewrite wordToNat_combine; simpl.
   rewrite Nat.mul_0_r, Nat.add_0_r.
   rewrite wordToNat_natToWord_idempotent'; auto.
-  destruct sz; simpl; try lia.
+  destruct sz; simpl; try omega.
   pose proof (pow2_zero sz).
-  lia.
+  omega.
 Qed.
 
 Lemma wordToNat_cast ni no (pf: ni = no):
@@ -6376,7 +6381,7 @@ Proof.
     match goal with
     | |- ((if ?P then _ else _) < _)%word => destruct P; simpl; auto
     end.
-    + assert (sth: ni < pow2 no) by lia.
+    + assert (sth: ni < pow2 no) by omega.
       specialize (IHni sth).
       assert (sth1: natToWord no (S ni) = natToWord no (1 + ni)) by auto.
       rewrite sth1.
@@ -6390,8 +6395,8 @@ Proof.
       end.
       pre_word_omega.
       assert (sth2: no > 0). {
-        destruct no; [|lia].
-        destruct ni; simpl in *; try lia.
+        destruct no; [|omega].
+        destruct ni; simpl in *; try omega.
       }
       apply wordToNat_zero in e.
       match type of IHni with
@@ -6408,7 +6413,7 @@ Proof.
       specialize (IHni n).
       rewrite <- ?(@natplus1_wordplus1_eq _ _ (wones no)); auto.
       * pre_word_omega.
-        lia.
+        omega.
       * pre_word_omega.
         rewrite wordToNat_natToWord_eqn.
         rewrite Nat.mod_small; auto.
@@ -6416,7 +6421,7 @@ Proof.
          rewrite wordToNat_natToWord_eqn in IHni.
          rewrite Nat.mod_small in IHni; auto.
     + pre_word_omega.
-      rewrite wordToNat_natToWord_idempotent'; auto; try lia.
+      rewrite wordToNat_natToWord_idempotent'; auto; try omega.
 Qed.
 
 
@@ -6440,14 +6445,14 @@ Proof.
     | |- # (if ?P then _ else _) = if ?P then _ else _ => destruct P
     end.
     + rewrite <- wordToNat_plus.
-      rewrite ?wordToNat_natToWord_idempotent'; try lia.
+      rewrite ?wordToNat_natToWord_idempotent'; try omega.
       * simpl;f_equal.
         rewrite IHni; auto.
-      * rewrite ?wordToNat_natToWord_idempotent'; try lia.
+      * rewrite ?wordToNat_natToWord_idempotent'; try omega.
         match goal with
-        | |- 1 + #(countLeadingZerosWord no ?x) < _ => pose proof (@countLeadingZerosWord_le_len_nat no ni ltac:(lia) x) as sth
+        | |- 1 + #(countLeadingZerosWord no ?x) < _ => pose proof (@countLeadingZerosWord_le_len_nat no ni ltac:(omega) x) as sth
         end.
-        lia.
+        omega.
     + rewrite roundTrip_0; auto.
 Qed.
 
