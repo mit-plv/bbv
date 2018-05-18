@@ -220,6 +220,13 @@ Proof.
   intros. pose proof (zero_lt_pow2 sz). omega.
 Qed.
 
+Lemma pow2_ne_zero: forall n, pow2 n <> 0.
+Proof.
+  intros.
+  pose proof (zero_lt_pow2 n).
+  omega.
+Qed.
+
 Lemma mul2_add : forall n, n * 2 = n + n.
 Proof.
   induction n; firstorder.
@@ -431,6 +438,15 @@ Proof.
   destruct (Npow2 n); auto.
   rewrite <-Pos.add_diag.
   reflexivity.
+Qed.
+
+Lemma Npow2_pos: forall a,
+    (0 < Npow2 a)%N.
+Proof.
+  intros.
+  destruct (Npow2 a) eqn: E.
+  - exfalso. apply (Npow2_not_zero a). assumption.
+  - constructor.
 Qed.
 
 Lemma minus_minus: forall a b c,
