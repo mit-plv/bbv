@@ -273,6 +273,9 @@ Proof.
   apply zero_lt_pow2.
 Qed.
 
+Lemma pow2_S: forall x, pow2 (S x) = 2 * pow2 x.
+Proof. intros. reflexivity. Qed.
+
 Lemma mod2_S_S : forall n,
   mod2 (S (S n)) = mod2 n.
 Proof.
@@ -464,3 +467,13 @@ Proof.
     + left. exists (S a). omega.
 Qed.
 
+Lemma mul_div_undo: forall i c,
+    c <> 0 ->
+    c * i / c = i.
+Proof.
+  intros.
+  pose proof (Nat.div_mul_cancel_l i 1 c) as P.
+  rewrite Nat.div_1_r in P.
+  rewrite Nat.mul_1_r in P.
+  apply P; auto.
+Qed.

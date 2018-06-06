@@ -6,7 +6,7 @@ Require Import Coq.Program.Tactics Coq.Program.Equality.
 Require Import Coq.setoid_ring.Ring.
 Require Import Coq.setoid_ring.Ring_polynom.
 Require Import bbv.Nomega.
-Require Export bbv.NatLib.
+Require Export bbv.NatLib bbv.NLib.
 Require Export bbv.DepEq bbv.DepEqNat.
 
 Require Import Coq.micromega.Lia.
@@ -352,6 +352,10 @@ Definition wslt_dec : forall sz (l r : word sz), {l <s r} + {l >s= r}.
   abstract congruence.
 Defined.
 
+Definition wltb{sz: nat}(l r: word sz): bool := BinNat.N.ltb (wordToN l) (wordToN r).
+
+Definition wsltb{sz: nat}(l r: word sz): bool := Z.ltb (wordToZ l) (wordToZ r).
+
 Notation "$ n" := (natToWord _ n) (at level 0).
 Notation "# n" := (wordToNat n) (at level 0).
 
@@ -382,6 +386,29 @@ Defined.
 Definition wrshifta (sz : nat) (w : word sz) (n : nat) : word sz.
   refine (split2 n sz _).
   rewrite plus_comm.
+  exact (sext w _).
+Defined.
+
+(* Redefine shifts so that they do not use eq_rect, which matches on add_comm,
+   which is an opaque proof, which makes cbv blow up.
+   If you ever want to reduce terms inside Coq with cbv, you should use the 
+   shifts below!  *)
+
+Definition wlshift' {sz : nat} (w : word sz) (n : nat) : word sz.
+  refine (split1 sz n (nat_cast _ _ _)).
+  apply PeanoNat.Nat.add_comm.
+  exact (combine (wzero n) w).
+Defined.
+
+Definition wrshift' {sz : nat} (w : word sz) (n : nat) : word sz.
+  refine (split2 n sz (nat_cast _ _ _)).
+  apply PeanoNat.Nat.add_comm.
+  exact (combine w (wzero n)).
+Defined.
+
+Definition wrshifta' {sz : nat} (w : word sz) (n : nat) : word sz.
+  refine (split2 n sz (nat_cast _ _ _)).
+  apply PeanoNat.Nat.add_comm.
   exact (sext w _).
 Defined.
 
@@ -1294,6 +1321,20 @@ Proof.
   intros.
   rewrite wmult_comm.
   apply wmult_unit.
+Qed.
+
+Lemma wmult_neut_l: forall (sz : nat) (x : word sz), $0 ^* x = $0.
+Proof.
+  intros. unfold wmult. unfold wordBin. do 2 rewrite wordToN_nat.
+  rewrite <- Nnat.Nat2N.inj_mul. rewrite roundTrip_0.
+  rewrite Nat.mul_0_l. simpl. rewrite wzero'_def. reflexivity.
+Qed.
+
+Lemma wmult_neut_r: forall (sz : nat) (x : word sz), x ^* $0 = $0.
+Proof.
+  intros. unfold wmult. unfold wordBin. do 2 rewrite wordToN_nat.
+  rewrite <- Nnat.Nat2N.inj_mul. rewrite roundTrip_0.
+  rewrite Nat.mul_0_r. simpl. rewrite wzero'_def. reflexivity.
 Qed.
 
 Theorem wmult_assoc : forall sz (x y z : word sz), x ^* (y ^* z) = x ^* y ^* z.
@@ -2607,6 +2648,17 @@ Proof.
   rewrite wnot_eq_rect.
   rewrite wnot_combine.
   rewrite wnot_zero.
+  reflexivity.
+Qed.
+
+Lemma wlshift_alt: forall sz n (a: word sz),
+    wlshift' a n = wlshift a n.
+Proof.
+  intros. unfold wlshift, wlshift'.
+  unfold eq_rec_r.
+  unfold eq_rec.
+  erewrite nat_cast_proof_irrel.
+  rewrite nat_cast_eq_rect.
   reflexivity.
 Qed.
 
@@ -4758,6 +4810,15 @@ Proof.
   reflexivity.
 Qed.
 
+Lemma natToWord_Z_to_nat: forall sz n,
+    (0 <= n)%Z ->
+    natToWord sz (Z.to_nat n) = ZToWord sz n.
+Proof.
+  intros. rewrite <- ZToWord_Z_of_nat.
+  rewrite Z2Nat.id by assumption.
+  reflexivity.
+Qed.
+
 Lemma ZToWord_sz0: forall z, ZToWord 0 z = $0.
 Proof.
   intros. unfold ZToWord. destruct z; try rewrite posToWord_sz0; reflexivity.
@@ -6229,6 +6290,17 @@ Proof.
   auto.
 Qed.
 
+Lemma wordToNat_wmult : forall (sz : nat) (w1 w2 : word sz),
+    #(w1 ^* w2) = (#w1 * #w2) mod pow2 sz.
+Proof using .
+  clear. intros.
+  rewrite <- (natToWord_wordToNat w1) at 1.
+  rewrite <- (natToWord_wordToNat w2) at 1.
+  rewrite <- natToWord_mult.
+  rewrite wordToNat_natToWord_eqn.
+  reflexivity.
+Qed.
+
 Lemma wor_r_wzero_1 sz:
   forall w1 w2,
     w1 ^| w2 = natToWord sz 0 ->
@@ -6702,8 +6774,8 @@ Proof.
 Qed.
 
 (* Usually this kind of lemmas would need a guarantee that "(wordToN a mod wordToN b)%N"
-     does not overflow, but fortunately this can never overflow.
-     And also, we don't need to prevent b from being 0. *)
+   does not overflow, but fortunately this can never overflow.
+   And also, we don't need to prevent b from being 0. *)
 Lemma wordToN_mod: forall sz (a b: word sz),
     wordToN (a ^% b) = (wordToN a mod wordToN b)%N.
 Proof.
@@ -6724,25 +6796,52 @@ Proof.
   rewrite Z_N_nat. reflexivity.
 Qed.
 
-(* This should be in the Coq library: N2Nat.inj_mod *)
-Lemma N2Nat_inj_mod: forall (a b: N),
-    (b <> 0)%N ->
-    N.to_nat (a mod b)%N = (N.to_nat a) mod (N.to_nat b).
-Proof.
-  intros.
-  rewrite <-? N_to_Z_to_nat.
-  rewrite N2Z.inj_mod by assumption.
-  apply Nat2Z.inj.
-  rewrite Zdiv.mod_Zmod.
-  - rewrite? Z2Nat.id; try apply N2Z.is_nonneg.
-    + reflexivity.
-    + pose proof (Z.mod_pos_bound (Z.of_N a) (Z.of_N b)) as Q.
-      destruct Q as [Q _].
-      * destruct b; try contradiction. simpl. constructor.
-      * exact Q.
-  - destruct b; try contradiction. simpl.
-    pose proof (Pos2Nat.is_pos p) as Q. omega.
-Qed.
+Section ThisShouldBeInCoqLibrary.
+
+  Lemma N2Nat_inj_mod: forall (a b: N),
+      (b <> 0)%N ->
+      N.to_nat (a mod b)%N = (N.to_nat a) mod (N.to_nat b).
+  Proof.
+    intros.
+    rewrite <-? N_to_Z_to_nat.
+    rewrite N2Z.inj_mod by assumption.
+    apply Nat2Z.inj.
+    rewrite Zdiv.mod_Zmod.
+    - rewrite? Z2Nat.id; try apply N2Z.is_nonneg.
+      + reflexivity.
+      + pose proof (Z.mod_pos_bound (Z.of_N a) (Z.of_N b)) as Q.
+        destruct Q as [Q _].
+        * destruct b; try contradiction. simpl. constructor.
+        * exact Q.
+    - destruct b; try contradiction. simpl.
+      pose proof (Pos2Nat.is_pos p) as Q. omega.
+  Qed.
+
+  Lemma Nat2Z_inj_pow: forall n m : nat,
+      Z.of_nat (n ^ m) = (Z.of_nat n ^ Z.of_nat m)%Z.
+  Proof.
+    intros. induction m.
+    - reflexivity.
+    - rewrite Nat2Z.inj_succ.
+      rewrite Z.pow_succ_r by (apply Nat2Z.is_nonneg).
+      rewrite <- IHm.
+      rewrite <- Nat2Z.inj_mul.
+      reflexivity.
+  Qed.
+
+  Lemma Z2Nat_inj_pow: forall n m : Z,
+      (0 <= n)%Z ->
+      (0 <= m)%Z ->
+      Z.to_nat (n ^ m) = Z.to_nat n ^ Z.to_nat m.
+  Proof.
+    intros.
+    pose proof (Nat2Z_inj_pow (Z.to_nat n) (Z.to_nat m)) as P.
+    rewrite? Z2Nat.id in P by assumption.
+    rewrite <- P.
+    apply Nat2Z.id.
+  Qed.
+
+End ThisShouldBeInCoqLibrary.
 
 Lemma wordToNat_mod: forall sz (a b: word sz),
     b <> $0 ->
@@ -6756,6 +6855,112 @@ Proof.
   - intro. apply H. replace 0%N with (wordToN (natToWord sz 0)) in H0.
     + apply wordToN_inj. exact H0.
     + erewrite <- wordToN_wzero. reflexivity.
+Qed.
+
+Lemma wlshift_mul_pow2: forall sz n (a: word sz),
+    wlshift a n = a ^* $ (pow2 n).
+Proof.
+  intros.
+  apply wordToNat_inj.
+  unfold wlshift.
+  rewrite? wordToNat_split1.
+  unfold eq_rec_r, eq_rec.
+  rewrite? wordToNat_eq_rect.
+  rewrite? wordToNat_combine.
+  rewrite? wordToNat_wzero.
+  rewrite wordToNat_wmult.
+  rewrite wordToNat_natToWord_eqn.
+  rewrite Nat.add_0_l.
+  rewrite Nat.mul_mod_idemp_r by (apply pow2_ne_zero).
+  rewrite Nat.mul_comm.
+  reflexivity.
+Qed.
+
+Lemma wlshift_mul_Zpow2: forall sz n (a: word sz),
+    (0 <= n)%Z ->
+    wlshift a (Z.to_nat n) = a ^* ZToWord sz (2 ^ n).
+Proof.
+  intros. rewrite wlshift_mul_pow2. f_equal.
+  change 2 with (Z.to_nat 2).
+  rewrite <- Z2Nat_inj_pow by omega.
+  apply natToWord_Z_to_nat.
+  apply Z.pow_nonneg.
+  omega.
+Qed.
+
+Lemma wlshift_distr_plus: forall sz n (a b: word sz),
+    wlshift (a ^+ b) n = wlshift a n ^+ wlshift b n.
+Proof.
+  intros.
+  rewrite? wlshift_mul_pow2.
+  apply wmult_plus_distr.
+Qed.
+
+Lemma wlshift'_distr_plus: forall sz n (a b: word sz),
+    wlshift' (a ^+ b) n = wlshift' a n ^+ wlshift' b n.
+Proof.
+  intros. rewrite? wlshift_alt. apply wlshift_distr_plus.
+Qed.
+
+Lemma wlshift_iter: forall sz n1 n2 (a: word sz),
+    wlshift (wlshift a n1) n2 = wlshift a (n1 + n2).
+Proof.
+  intros. rewrite? wlshift_mul_pow2.
+  rewrite <- wmult_assoc.
+  rewrite <- natToWord_mult.
+  do 2 f_equal.
+  symmetry.
+  apply Nat.pow_add_r.
+Qed.
+  
+Lemma wlshift'_iter: forall sz n1 n2 (a: word sz),
+    wlshift' (wlshift' a n1) n2 = wlshift' a (n1 + n2).
+Proof.
+  intros. rewrite? wlshift_alt. apply wlshift_iter.
+Qed.
+
+Lemma wlshift_zero: forall sz n, wlshift $0 n = natToWord sz 0.
+Proof.
+  intros.
+  apply wordToNat_inj.
+  unfold wlshift.
+  rewrite? wordToNat_split1.
+  unfold eq_rec_r, eq_rec.
+  rewrite? wordToNat_eq_rect.
+  rewrite? wordToNat_combine.
+  rewrite? wordToNat_wzero.
+  rewrite Nat.mul_0_r.
+  change (0 + 0) with 0.
+  rewrite Nat.mod_0_l by (apply pow2_ne_zero).
+  reflexivity.
+Qed.
+
+Lemma wlshift'_zero: forall sz n, wlshift' $0 n = natToWord sz 0.
+Proof.
+  intros. rewrite? wlshift_alt. apply wlshift_zero.
+Qed.
+  
+Lemma sext_natToWord_nat_cast: forall sz2 sz1 sz n (e: sz1 + sz2 = sz),
+  2 * n < pow2 sz1 ->
+  nat_cast word e (sext (natToWord sz1 n) sz2) = natToWord sz n.
+Proof.
+  intros. rewrite nat_cast_eq_rect. apply sext_natToWord. assumption.
+Qed.
+
+Lemma sext_neg_natToWord_nat_cast: forall sz2 sz1 sz n (e: sz1 + sz2 = sz),
+  2 * n < pow2 sz1 ->
+  nat_cast word e (sext (wneg (natToWord sz1 n)) sz2) = wneg (natToWord sz n).
+Proof.
+  intros. rewrite nat_cast_eq_rect. apply sext_wneg_natToWord. assumption.
+Qed.
+
+Lemma sext0: forall sz0 sz (v: word sz) (e: sz0 = 0),
+  sext v sz0 = nat_cast word (eq_ind_r (fun sz0 : nat => sz = sz + sz0) (plus_n_O sz) e) v.
+Proof.
+  intros. subst.
+  unfold sext.
+  destruct (wmsb v false) eqn: E;
+    simpl; rewrite combine_n_0; rewrite <- nat_cast_eq_rect; apply nat_cast_proof_irrel.
 Qed.
 
 Local Close Scope nat.
