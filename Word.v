@@ -293,6 +293,8 @@ Definition wordToZ sz (w : word sz) : Z :=
     | Npos x => Zpos x
     end.
 
+Definition uwordToZ sz (w : word sz) : Z := Z.of_N (wordToN w).
+
 Definition ZToWord (sz : nat) (z : Z) : word sz :=
   match z with
   | Z0 => wzero' sz
@@ -6961,6 +6963,46 @@ Proof.
   unfold sext.
   destruct (wmsb v false) eqn: E;
     simpl; rewrite combine_n_0; rewrite <- nat_cast_eq_rect; apply nat_cast_proof_irrel.
+Qed.
+
+Lemma wordToN_wordToZ: forall (sz : nat) (w : word sz),
+    wordToN w = Z.to_N (wordToZ w + Z.of_N (if wmsb w false then Npow2 sz else 0%N)).
+Proof.
+  intros.
+  rewrite (wordToZ_wordToN w).
+  remember (if wmsb w false then Npow2 sz else 0%N) as c; clear Heqc.
+  rewrite Z.sub_add.
+  symmetry.
+  apply N2Z.id.
+Qed.
+
+Lemma uwordToZ_ZToWord_0: forall (z : Z) (sz : nat),
+    (0 <= z < Z.of_N (Npow2 sz))%Z ->
+    uwordToZ (ZToWord sz z) = z.
+Proof.
+  intros.
+  unfold uwordToZ.
+  pose proof (Z2N.id _ (proj1 H)).
+  remember (Z.to_N z) as n; clear Heqn. subst z.
+  apply proj2 in H.
+  f_equal.
+  rewrite ZToWord_Z_of_N.
+  apply wordToN_NToWord_2.
+  apply N2Z.inj_lt.
+  assumption.
+Qed.
+
+Lemma uwordToZ_ZToWord: forall (z : Z) (sz : nat),
+    (0 <= z < 2 ^ (Z.of_nat sz))%Z ->
+    uwordToZ (ZToWord sz z) = z.
+Proof.
+  intros. apply uwordToZ_ZToWord_0.
+  intuition idtac.
+  change 2%Z with (Z.of_nat 2) in H1.
+  rewrite <- Nat2Z_inj_pow in H1.
+  rewrite <- N_nat_Z.
+  rewrite Npow2_nat.
+  assumption.
 Qed.
 
 Local Close Scope nat.
