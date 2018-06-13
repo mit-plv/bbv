@@ -2007,6 +2007,19 @@ Proof.
   reflexivity.
 Qed.
 
+Lemma wminus_wplus_undo: forall sz (a b: word sz),
+    a ^- b ^+ b = a.
+Proof.
+  intros.
+  rewrite wminus_def.
+  rewrite <- wplus_assoc.
+  rewrite (wplus_comm (^~ b)).
+  rewrite wminus_inv.
+  rewrite wplus_comm.
+  rewrite wplus_unit.
+  reflexivity.
+Qed.  
+
 Lemma wneg_zero:
   forall {sz} (w: word sz), ^~ w = (natToWord sz 0) -> w = natToWord sz 0.
 Proof.
@@ -7003,6 +7016,269 @@ Proof.
   rewrite <- N_nat_Z.
   rewrite Npow2_nat.
   assumption.
+Qed.
+
+Lemma wordToN_neq_0: forall sz (b : word sz),
+    b <> $0 ->
+    wordToN b <> 0%N.
+Proof.
+  intros.
+  intro C.
+  apply H.
+  apply wordToN_inj.
+  erewrite <- wordToN_wzero in C.
+  unfold wzero in C.
+  exact C.
+Qed.
+
+(* These counterexamples will hopefully be found by users who use commands
+   such as "Search ((_ ^+ _) ^% _)" *)
+Lemma wmod_plus_distr_does_not_hold: ~ forall sz (a b m: word sz),
+    m <> $0 ->
+    (a ^+ b) ^% m = ((a ^% m) ^+ (b ^% m)) ^% m.
+Proof.
+  intro C.
+  specialize (C 4 $9 $11 $7). cbv in C.
+  match type of C with (?A -> _) => assert A by (intro; discriminate) end.
+  specialize (C H). discriminate.
+Qed.
+
+Lemma wmul_mod_distr_does_not_hold: ~ forall sz (a b n: word sz),
+    n <> $0 ->
+    (a ^* b) ^% n = ((a ^% n) ^* (b ^% n)) ^% n.
+Proof.
+  intro C.
+  specialize (C 4 $9 $11 $7). cbv in C.
+  match type of C with (?A -> _) => assert A by (intro; discriminate) end.
+  specialize (C H). discriminate.
+Qed.
+
+Lemma Nmod_0_r: forall a : N, (a mod 0)%N = a.
+Proof.
+  intros. destruct a; reflexivity.
+Qed.
+
+Lemma wordToN_0: forall sz,
+    wordToN (natToWord sz 0) = 0%N.
+Proof.
+  intros. change (natToWord sz 0) with (wzero sz).
+  apply wordToN_wzero.
+Qed.
+
+Lemma NToWord_0: forall sz,
+    NToWord sz 0 = $ (0).
+Proof.
+  intros. change 0%nat with (N.to_nat 0).
+  apply NToWord_nat.
+Qed.
+
+Lemma wmod_0_r: forall sz (a: word sz), a ^% $0 = a.
+Proof.
+  intros. unfold wmod, wordBin.
+  rewrite wordToN_0.
+  rewrite Nmod_0_r.
+  apply NToWord_wordToN.
+Qed.
+
+Lemma wordToN_NToWord_eqn: forall sz (n : N),
+    wordToN (NToWord sz n) = (n mod Npow2 sz)%N.
+Proof.
+  intros.
+  pose proof (Npow2_not_zero sz).
+  apply Nnat.N2Nat.inj.
+  rewrite wordToN_to_nat.
+  rewrite N2Nat_inj_mod by assumption.
+  rewrite Npow2_nat.
+  rewrite <- wordToNat_natToWord_eqn.
+  rewrite <- NToWord_nat.
+  reflexivity.
+Qed.
+
+Lemma Nminus_mod_idemp_r: forall a b n : N,
+    (n <> 0)%N ->
+    (b <= a)%N ->
+    ((a - b mod n) mod n)%N = ((a - b) mod n)%N.
+Proof.
+  intros.
+  apply N2Z.inj.
+  rewrite? N2Z.inj_mod by assumption.
+  pose proof (N.mod_le b n H).
+  rewrite N2Z.inj_sub by (eapply N.le_trans; eassumption).
+  rewrite N2Z.inj_sub by assumption.
+  rewrite? N2Z.inj_mod by assumption.
+  apply Zdiv.Zminus_mod_idemp_r.
+Qed.
+
+Lemma drop_sub_N: forall sz (n k : N),
+    (k * Npow2 sz <= n)%N ->
+    NToWord sz (n - k * Npow2 sz) = NToWord sz n.
+Proof.
+  intros.
+  apply wordToN_inj.
+  pose proof (Npow2_not_zero sz).
+  do 2 rewrite wordToN_NToWord_eqn.
+  rewrite <- Nminus_mod_idemp_r by assumption.
+  rewrite N.mod_mul by assumption.
+  rewrite N.sub_0_r.
+  reflexivity.
+Qed.
+
+Lemma wmod_divides: forall sz (a b: word sz),
+    a ^% b = $0 ->
+    exists k, a = b ^* k.
+Proof.
+  intros. destruct (weq b $0).
+  - subst b. rewrite wmod_0_r in *. subst a. exists (natToWord sz 0).
+    symmetry. apply wmult_neut_r.
+  - unfold wmod, wmult, wordBin in *.
+    pose proof (N.mod_divides (wordToN a) (wordToN b)) as P.
+    apply wordToN_neq_0 in n.
+    specialize (P n).
+    destruct P as [ [k P] _].
+    + apply (f_equal (@wordToN sz)) in H.
+      rewrite wordToN_NToWord_2 in H.
+      * rewrite H. apply wordToN_0.
+      * pose proof (wordToN_bound a). remember (wordToN a) as c. clear Heqc a.
+        pose proof (wordToN_bound b). remember (wordToN b) as d. clear Heqd b.
+        pose proof (N.mod_upper_bound c d n).
+        nomega.
+    + exists (NToWord sz (k - k / (Npow2 sz) * Npow2 sz)).
+      rewrite wordToN_NToWord_2.
+      { rewrite N.mul_sub_distr_l.
+        rewrite N.mul_assoc.
+        rewrite drop_sub_N.
+        - rewrite <- P. symmetry. apply NToWord_wordToN.
+        - rewrite <- N.mul_assoc.
+          rewrite <- (N.mul_comm (Npow2 sz)).
+          apply N.mul_le_mono_l.
+          apply (N.mul_div_le k (Npow2 sz)).
+          apply Npow2_not_zero.
+      }
+      { rewrite <- N.mul_comm. rewrite <- N.mod_eq by (apply Npow2_not_zero).
+        apply N.mod_upper_bound. apply Npow2_not_zero. }
+Qed.
+
+Lemma wmod_divides_other_direction_does_not_hold: ~ forall sz (a b: word sz),
+    b <> $0 ->
+    (exists k, a = b ^* k) ->
+    a ^% b = $0.
+Proof.
+  intro C. specialize (C 4 $14 $5).
+  match type of C with (?A -> _) => assert A by (intro; discriminate) end.
+  specialize (C H).
+  match type of C with (?A -> _) => assert A as B end.
+  - exists (natToWord 4 6). reflexivity.
+  - specialize (C B). cbv in C. discriminate.
+Qed.
+
+Lemma wmod_mul_does_not_hold: ~ forall sz (a b: word sz),
+    b <> $0 ->
+    (a ^* b) ^% b = $0.
+Proof.
+  intro C.
+  specialize (C 4 $6 $5).
+  match type of C with (?A -> _) => assert A by (intro; discriminate) end.
+  specialize (C H).
+  cbv in C.
+  discriminate.
+Qed.
+
+Lemma wmult_plus_distr_l: forall (sz : nat) (x y z : word sz),
+    z ^* (x ^+ y) = z ^* x ^+ z ^* y.
+Proof.
+  intros. rewrite! (wmult_comm z).
+  apply wmult_plus_distr.
+Qed.
+
+Lemma wmod_same: forall sz (a: word sz), a ^% a = $0.
+Proof.
+  intros. destruct (weq a $0).
+  - subst a. rewrite wmod_0_r in *. reflexivity.
+  - unfold wmod, wordBin. apply wordToN_neq_0 in n. rewrite N.mod_same by assumption.
+    apply NToWord_0.
+Qed.
+
+Lemma wmod_0_l: forall sz (m: word sz),
+    $0 ^% m = $0.
+Proof.
+  intros. unfold wmod, wordBin.
+  rewrite wordToN_0.
+  destruct (N.eq_dec (wordToN m) 0%N).
+  - rewrite e. change (0 mod 0)%N with 0%N. apply NToWord_0.
+  - rewrite N.mod_0_l by assumption. apply NToWord_0.
+Qed.
+
+Lemma wmod_plus_distr: forall sz (a b m: word sz),
+    (exists k, (wordToN m * k)%N = Npow2 sz) ->
+    (a ^+ b) ^% m = ((a ^% m) ^+ (b ^% m)) ^% m.
+Proof.
+  intros. destruct H as [k E].
+  assert (wordToN m <> 0%N) as H. {
+    intro C. rewrite C in E. simpl in E. symmetry in E.
+    apply Npow2_not_zero in E.
+    assumption.
+  }
+  unfold wplus, wmod, wordBin.
+  pose proof (wordToN_bound a). remember (wordToN a) as c. clear Heqc a.
+  pose proof (wordToN_bound b). remember (wordToN b) as d. clear Heqd b.
+  pose proof (wordToN_bound m). remember (wordToN m) as n. clear Heqn m.
+  pose proof (N.mod_upper_bound c n H).
+  pose proof (N.mod_upper_bound d n H).
+  rewrite (@wordToN_NToWord_2 sz (c mod n)) by nomega.
+  rewrite (@wordToN_NToWord_2 sz (d mod n)) by nomega.
+  repeat match goal with
+  | |- context [wordToN (NToWord ?sz ?n)] =>
+    let k := fresh "k" in
+    let E := fresh "E" in
+    let B := fresh "B" in
+    destruct (wordToN_NToWord sz n) as [ k [E B] ];
+    rewrite E in *; clear E
+  end.
+  rewrite <- E in *.
+  rewrite <- Nminus_mod_idemp_r by assumption.
+  rewrite <- (@Nminus_mod_idemp_r (c mod n + d mod n)) by assumption.
+  rewrite (N.mul_comm n k).
+  do 2 rewrite N.mul_assoc.
+  do 2 rewrite N.mod_mul by assumption.
+  do 2 rewrite N.sub_0_r.
+  f_equal.
+  apply N.add_mod.
+  assumption.
+Qed.
+
+Lemma wmod_mul: forall sz (a b: word sz),
+    (exists k, (wordToN b * k)%N = Npow2 sz) ->
+    (a ^* b) ^% b = $0.
+Proof.
+  intros. destruct H as [k E].
+  assert (wordToN b <> 0%N) as H. {
+    intro C. rewrite C in E. simpl in E. symmetry in E.
+    apply Npow2_not_zero in E.
+    assumption.
+  }
+  unfold wmult, wmod, wordBin.
+  pose proof (wordToN_bound a). remember (wordToN a) as c. clear Heqc a.
+  pose proof (wordToN_bound b). remember (wordToN b) as d. clear Heqd b.
+  pose proof (N.mod_upper_bound c d H).
+  repeat match goal with
+  | |- context [wordToN (NToWord ?sz ?n)] =>
+    let k := fresh "k" in
+    let E := fresh "E" in
+    let B := fresh "B" in
+    destruct (wordToN_NToWord sz n) as [ k [E B] ];
+    rewrite E in *; clear E
+  end.
+  rewrite <- E in *.
+  rewrite <- Nminus_mod_idemp_r by assumption.
+  rewrite (N.mul_comm d k).
+  rewrite N.mul_assoc.
+  rewrite N.mod_mul by assumption.
+  rewrite N.sub_0_r.
+  rewrite N.mul_mod by assumption.
+  rewrite N.mod_same by assumption.
+  rewrite N.mul_0_r.
+  rewrite N.mod_0_l by assumption.
+  apply NToWord_0.
 Qed.
 
 Local Close Scope nat.
