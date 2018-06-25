@@ -2942,15 +2942,6 @@ Proof.
   destruct_existT; reflexivity.
 Qed.
 
-Lemma wmsb_eq_rect: (* Note: not axiom free *)
-  forall sz1 (w: word sz1) sz2 (Hsz: sz1 = sz2) b,
-    wmsb w b = wmsb (eq_rect _ word w _ Hsz) b.
-Proof.
-  intros.
-  apply wmsb_existT.
-  apply eq_sym, existT_eq_rect.
-Qed.
-
 Lemma destruct_word_S: forall sz (w: word (S sz)),
     exists v b, w = WS b v.
 Proof.
@@ -2999,34 +2990,82 @@ Proof.
   dependent induction w; intros; intuition idtac.
 Qed.
 
-Lemma wmsb_split2: (* Note: not axiom free *)
-  forall sz (w: word (sz + 1)) b,
-    wmsb w b = if weq (split2 _ 1 w) (natToWord _ 0) then false else true.
+Lemma wmsb_nat_cast:
+  forall sz1 (w: word sz1) sz2 (Hsz: sz1 = sz2) b,
+    wmsb w b = wmsb (nat_cast word Hsz w) b.
 Proof.
-  dependent destruction w; intros; [omega|].
-  assert (sz = n) by omega; subst; clear x0.
-
-  move w at top.
-  dependent induction w.
-  - cbn in *.
-    do 2 dependent destruction w0.
-    destruct b0; cbn; reflexivity.
-  - simpl in w0.
-    dependent destruction w0.
-    specialize (IHw b w0).
-
-    cbn; cbn in IHw.
-    apply IHw; clear -x.
-    remember (WS b w) as ww; clear Heqww.
-    generalize dependent w0.
-    simpl; replace (n + 1) with (S n) by omega.
-    intros.
-    inversion x; subst; destruct_existT.
-    inversion H0; subst; destruct_existT.
+  destruct sz1; intros.
+  - subst sz2. reflexivity.
+  - destruct sz2; [discriminate|].
+    destruct (destruct_word_S w) as [v [b0 E]]. subst w.
+    pose proof (eq_add_S sz1 sz2 Hsz) as Hsz'.
+    subst sz2.
+    rewrite nat_cast_eq_rect.
+    f_equal.
+    erewrite (WS_eq_rect _ _ _ eq_refl).
     reflexivity.
 Qed.
 
-Lemma wmsb_true_split2_wones: (* Note: not axiom free *)
+Lemma wmsb_eq_rect:
+  forall sz1 (w: word sz1) sz2 (Hsz: sz1 = sz2) b,
+    wmsb w b = wmsb (eq_rect _ word w _ Hsz) b.
+Proof.
+  intros. rewrite <- nat_cast_eq_rect. apply wmsb_nat_cast.
+Qed.
+
+Local Arguments nat_cast: simpl never.
+
+Lemma nat_cast_inj: forall sz sz' (p: sz = sz') (w1 w2: word sz),
+    nat_cast word p w1 = nat_cast word p w2 ->
+    w1 = w2.
+Proof.
+  intros. destruct p. rewrite? nat_cast_same in H. assumption.
+Qed.
+
+Lemma wtl_nat_cast_WS: forall n m (q: n = m) (p: S n = S m) (w: word n) (b: bool),
+    wtl (nat_cast word p (WS b w)) =
+    nat_cast word q w.
+Proof.
+  intros n m. destruct q. intros.
+  rewrite nat_cast_same.
+  transitivity (wtl (WS b w)); [|reflexivity].
+  f_equal.
+  rewrite <- nat_cast_same.
+  apply nat_cast_proof_irrel.
+Qed.
+
+Lemma wmsb_split2': forall sz (w: word (S sz)) b,
+  wmsb w b = negb (weqb (split2 sz 1 (nat_cast _ (eq_sym (Nat.add_1_r sz)) w)) (natToWord _ 0)).
+Proof.
+  apply (induct_word_S (fun sz w => forall b, wmsb w b =
+     negb (weqb (split2 sz 1 (nat_cast _ (eq_sym (Nat.add_1_r sz)) w)) (natToWord _ 0))));
+  intros.
+  - destruct b; reflexivity.
+  - cbn in *. rewrite (H false). repeat f_equal.
+    clear.
+    apply (nat_cast_inj (Nat.add_1_r n)).
+    erewrite wtl_nat_cast_WS.
+    reflexivity.
+Qed.
+
+Lemma wmsb_split2:
+  forall sz (w: word (sz + 1)) b,
+    wmsb w b = if weq (split2 _ 1 w) (natToWord _ 0) then false else true.
+Proof.
+  intros.
+  pose proof (@wmsb_split2' sz). specialize (H (nat_cast _ (Nat.add_1_r sz) w) b).
+  simpl in H.
+  rewrite nat_cast_fuse in H.
+  rewrite <- (nat_cast_proof_irrel word _ _ eq_refl) in H.
+  rewrite nat_cast_same in H.
+  destruct (weq (split2 sz 1 w) $ (0)).
+  - rewrite e in H. simpl in H. rewrite <- H. clear.
+    apply wmsb_nat_cast.
+  - simpl in n. apply weqb_ne in n. rewrite n in H. simpl in H. rewrite <- H. clear.
+    apply wmsb_nat_cast.
+Qed.
+
+Lemma wmsb_true_split2_wones:
   forall sz (w: word (sz + 1)) b,
     wmsb w b = true ->
     wones 1 = split2 sz 1 w.
@@ -3037,11 +3076,11 @@ Proof.
   - rewrite H in H0; discriminate.
   - clear -n.
     remember (split2 sz 1 w) as ww; clear Heqww w.
-    do 2 dependent destruction ww.
-    destruct b; intuition.
+    destruct (destruct_word_S ww) as [w [b E]]. subst ww.
+    rewrite (word0 w) in *. clear w. simpl in *. destruct b; congruence.
 Qed.
 
-Lemma wmsb_false_split2_wzero: (* Note: not axiom free *)
+Lemma wmsb_false_split2_wzero:
   forall sz (w: word (sz + 1)) b,
     wmsb w b = false ->
     wzero 1 = split2 sz 1 w.
@@ -3052,7 +3091,7 @@ Proof.
   rewrite H in H0; discriminate.
 Qed.
 
-Lemma wmsb_split1_sext: (* Note: not axiom free *)
+Lemma wmsb_split1_sext:
   forall sz (w: word (sz + 1)),
     wmsb w false = wmsb (split1 _ 1 w) false ->
     exists sw, sext sw 1 = w.
@@ -5627,7 +5666,7 @@ Proof.
   apply combine_WO.
 Qed.
 
-Lemma wmsb_false_wordToNat_eq: (* Note: not axiom free *)
+Lemma wmsb_false_wordToNat_eq:
   forall sz (w: word (S sz)),
     wmsb w false = false ->
     wordToNat w = wordToNat (split1 sz _ (eq_rect _ word w _ (Nat.add_comm 1 sz))).
@@ -5652,7 +5691,7 @@ Proof.
   omega.
 Qed.
 
-Lemma zext_size: (* Note: not axiom free *)
+Lemma zext_size:
   forall sz n (w: word (sz + n)),
     (- Z.of_nat (pow2 sz) <= wordToZ w < Z.of_nat (pow2 sz))%Z ->
     wmsb w false = false ->
