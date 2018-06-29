@@ -1,8 +1,6 @@
 default_target: all
 
-COQC=$(COQBIN)coqc
-COQTOP=$(COQBIN)coqtop
-COQDOC=$(COQBIN)coqdoc
+COQMAKEFILE=$(COQBIN)coq_makefile
 
 all: Makefile.coq
 	$(MAKE) -f Makefile.coq
@@ -13,10 +11,10 @@ html: doc
 
 clean: Makefile.coq
 	$(MAKE) -f Makefile.coq clean
-	rm Makefile.coq
+	rm -f Makefile.coq Makefile.coq.conf
 
 install: Makefile.coq
 	$(MAKE) -f Makefile.coq install
 
 Makefile.coq: _CoqProject
-	$(COQBIN)coq_makefile -f _CoqProject -o Makefile.coq
+	$(COQMAKEFILE) -f _CoqProject -o Makefile.coq
