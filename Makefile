@@ -8,7 +8,8 @@ all: Makefile.coq
 	$(MAKE) -f Makefile.coq
 
 doc: all
-	$(MAKE) -f Makefile.coq doc
+	$(MAKE) -f Makefile.coq html
+html: doc
 
 clean: Makefile.coq
 	$(MAKE) -f Makefile.coq clean

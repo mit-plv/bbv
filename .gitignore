@@ -6,3 +6,4 @@
 .*.cache
 Makefile.coq.conf
 Makefile.coq
+html/
