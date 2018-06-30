@@ -1,26 +1,20 @@
-
 default_target: all
 
-COQFLAGS= -Q . bbv
+COQMAKEFILE=$(COQBIN)coq_makefile
 
-DEPFLAGS:=$(COQFLAGS)
+all: Makefile.coq
+	$(MAKE) -f Makefile.coq
 
-COQC=$(COQBIN)coqc
-COQTOP=$(COQBIN)coqtop
-COQDEP=$(COQBIN)coqdep $(DEPFLAGS)
-COQDOC=$(COQBIN)coqdoc
+doc: all
+	$(MAKE) -f Makefile.coq html
+html: doc
 
-%.vo: %.v
-	$(COQC) $(COQFLAGS) $*.v 
+clean: Makefile.coq
+	$(MAKE) -f Makefile.coq clean
+	rm -f Makefile.coq Makefile.coq.conf
 
-all: $(patsubst %.v,%.vo,$(wildcard ./*.v))
+install: Makefile.coq
+	$(MAKE) -f Makefile.coq install
 
-.depend depend:
-	$(COQDEP) >.depend `find . -name "*.v"`
-
-clean:
-	find . -type f \( -name '*.glob' -o -name '*.vo' -o -name '*.aux' \) -delete
-	rm .depend
-
-include .depend
-
+Makefile.coq: _CoqProject
+	$(COQMAKEFILE) -f _CoqProject -o Makefile.coq

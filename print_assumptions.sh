@@ -6,7 +6,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-infile="$1.v"
+infile="theories/$1.v"
 outfile="$1_print_assumptions.v"
 
 echo "Require Import bbv.$1." > "$outfile"
