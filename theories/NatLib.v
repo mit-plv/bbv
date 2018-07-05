@@ -522,3 +522,37 @@ Proof.
   destruct E as [E | E]; [assumption|].
   rewrite E in C. simpl in C. discriminate.
 Qed.
+
+Lemma mod_0_r: forall (m: nat),
+    m mod 0 = 0.
+Proof.
+  intros. reflexivity.
+Qed.
+
+Lemma sub_mod_0: forall (a b m: nat),
+    a mod m = 0 ->
+    b mod m = 0 ->
+    (a - b) mod m = 0.
+Proof.
+  intros. assert (m = 0 \/ m <> 0) as C by omega. destruct C as [C | C].
+  - subst. apply mod_0_r.
+  - assert (a - b = 0 \/ b < a) as D by omega. destruct D as [D | D].
+    + rewrite D. apply Nat.mod_0_l. assumption.
+    + apply Nat2Z.inj. simpl.
+      rewrite Zdiv.mod_Zmod by assumption.
+      rewrite Nat2Z.inj_sub by omega.
+      rewrite Zdiv.Zminus_mod.
+      rewrite <-! Zdiv.mod_Zmod by assumption.
+      rewrite H. rewrite H0.
+      apply Z.mod_0_l.
+      omega.
+Qed.      
+
+Lemma mul_div_exact: forall (a b: nat),
+    b <> 0 ->
+    a mod b = 0 ->
+    b * (a / b) = a.
+Proof.
+  intros. edestruct Nat.div_exact as [_ P]; [eassumption|].
+  specialize (P H0). symmetry. exact P.
+Qed.

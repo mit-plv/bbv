@@ -6,7 +6,7 @@ Require Import Coq.Program.Tactics Coq.Program.Equality.
 Require Import Coq.setoid_ring.Ring.
 Require Import Coq.setoid_ring.Ring_polynom.
 Require Import bbv.Nomega.
-Require Export bbv.NatLib bbv.NLib.
+Require Export bbv.ZLib bbv.NatLib bbv.NLib.
 Require Export bbv.DepEq bbv.DepEqNat.
 
 Require Import Coq.micromega.Lia.
@@ -2502,6 +2502,17 @@ Proof.
   apply wle_le; auto.
   apply wordToNat_bound.
   apply wordToNat_bound.
+Qed.
+
+Lemma wminus_minus': forall (sz : nat) (a b : word sz),
+    (#b <= #a)%nat ->
+    #(a ^- b) = #a - #b.
+Proof.
+  intros. apply wminus_minus.
+  unfold wlt. intro C.
+  apply Nlt_out in C.
+  rewrite! wordToN_to_nat in *.
+  omega.
 Qed.
 
 Lemma wordToNat_neq_inj: forall sz (a b : word sz),
