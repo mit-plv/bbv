@@ -23,3 +23,13 @@ Proof.
   - apply A; congruence.
   - apply Z.mod_divide; assumption.
 Qed.
+
+Lemma mod_add_r: forall a b,
+    b <> 0 ->
+    (a + b) mod b = a mod b.
+Proof.
+  intros. rewrite <- Z.add_mod_idemp_r by omega.
+  rewrite Z.mod_same by omega.
+  rewrite Z.add_0_r.
+  reflexivity.
+Qed.
