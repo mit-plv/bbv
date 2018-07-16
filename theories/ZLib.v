@@ -1,5 +1,6 @@
 Require Import Coq.ZArith.BinInt.
 Require Import Coq.omega.Omega.
+Require Import Coq.ZArith.ZArith.
 
 Local Open Scope Z_scope.
 
@@ -23,6 +24,25 @@ Proof.
   - apply A; congruence.
   - apply Z.mod_divide; assumption.
 Qed.
+
+Lemma mod_0_r: forall (m: Z),
+    m mod 0 = 0.
+Proof.
+  intros. destruct m; reflexivity.
+Qed.
+
+Lemma sub_mod_0: forall (a b m: Z),
+    a mod m = 0 ->
+    b mod m = 0 ->
+    (a - b) mod m = 0.
+Proof.
+  intros. assert (m = 0 \/ m <> 0) as C by omega. destruct C as [C | C].
+  - subst. apply mod_0_r.
+  - rewrite Zdiv.Zminus_mod.
+    rewrite H. rewrite H0.
+    apply Z.mod_0_l.
+    assumption.
+Qed.      
 
 Lemma mod_add_r: forall a b,
     b <> 0 ->

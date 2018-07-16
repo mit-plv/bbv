@@ -1440,6 +1440,12 @@ Theorem wminus_inv : forall sz (x : word sz), x ^+ ^~ x = wzero sz.
   omega.
 Qed.
 
+Lemma wminus_diag: forall sz (w: word sz),
+    w ^- w = $0.
+Proof.
+  intros. unfold wminus. apply wminus_inv.
+Qed.
+
 Definition wring (sz : nat) : ring_theory (wzero sz) (wone sz) (@wplus sz) (@wmult sz) (@wminus sz) (@wneg sz) (@eq _) :=
   mk_rt _ _ _ _ _ _ _
   (@wplus_unit _) (@wplus_comm _) (@wplus_assoc _)
@@ -5902,6 +5908,13 @@ Proof.
   apply Nlt_in in H.
   rewrite wordToN_plus by assumption.
   reflexivity.
+Qed.
+
+Lemma wordToNat_wplus'': forall sz (a: word sz) (b: nat),
+    (#a + b < pow2 sz)%nat -> #(a ^+ $b) = #a + b.
+Proof.
+  intros. rewrite wordToNat_wplus';
+  rewrite wordToNat_natToWord_2; omega.
 Qed.
 
 Lemma wordToNat_wmult': forall sz (a b: word sz),
