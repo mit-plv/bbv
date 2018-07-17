@@ -2,10 +2,10 @@ VS:=$(shell find . -type f -name '*.v')
 
 .PHONY: coq clean
 
-coq: Makefile.coq.all
+coq: Makefile.coq.all $(VS)
 	$(MAKE) -f Makefile.coq.all
 
-Makefile.coq.all: Makefile $(VS)
+Makefile.coq.all:
 	$(COQBIN)coq_makefile -f _CoqProject $(VS) -o Makefile.coq.all
 
 clean:: Makefile.coq.all
