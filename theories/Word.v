@@ -8,6 +8,7 @@ Require Import Coq.setoid_ring.Ring_polynom.
 Require Import bbv.Nomega.
 Require Export bbv.ZLib bbv.NatLib bbv.NLib.
 Require Export bbv.DepEq bbv.DepEqNat.
+Require Import bbv.ReservedNotations.
 
 Require Import Coq.micromega.Lia.
 (* for nia (integer arithmetic with multiplications that omega cannot solve *)
@@ -242,17 +243,17 @@ Definition wmultN' sz (x y : word sz) : word sz :=
 
 Definition wminusN sz (x y : word sz) : word sz := wplusN x (wnegN y).
 
-Notation "w ~ 1" := (WS true w)
- (at level 7, left associativity, format "w '~' '1'") : word_scope.
-Notation "w ~ 0" := (WS false w)
- (at level 7, left associativity, format "w '~' '0'") : word_scope.
+Module Import ArithmeticNotations.
+  Notation "w ~ 1" := (WS true w) : word_scope.
+  Notation "w ~ 0" := (WS false w) : word_scope.
 
-Notation "^~" := wneg.
-Notation "l ^+ r" := (@wplus _ l%word r%word) (at level 50, left associativity).
-Notation "l ^* r" := (@wmult _ l%word r%word) (at level 40, left associativity).
-Notation "l ^- r" := (@wminus _ l%word r%word) (at level 50, left associativity).
-Notation "l ^/ r" := (@wdiv _ l%word r%word) (at level 50, left associativity).
-Notation "l ^% r" := (@wmod _ l%word r%word) (at level 50, left associativity).
+  Notation "^~" := wneg : word_scope.
+  Notation "l ^+ r" := (@wplus _ l%word r%word) : word_scope.
+  Notation "l ^* r" := (@wmult _ l%word r%word) : word_scope.
+  Notation "l ^- r" := (@wminus _ l%word r%word) : word_scope.
+  Notation "l ^/ r" := (@wdiv _ l%word r%word) : word_scope.
+  Notation "l ^% r" := (@wmod _ l%word r%word) : word_scope.
+End ArithmeticNotations.
 
 (** * Bitwise operators *)
 
@@ -274,8 +275,10 @@ Definition wor := bitwp orb.
 Definition wand := bitwp andb.
 Definition wxor := bitwp xorb.
 
-Notation "l ^| r" := (@wor _ l%word r%word) (at level 50, left associativity).
-Notation "l ^& r" := (@wand _ l%word r%word) (at level 40, left associativity).
+Module Import BitwiseNotations.
+  Notation "l ^| r" := (@wor _ l%word r%word) : word_scope.
+  Notation "l ^& r" := (@wand _ l%word r%word) : word_scope.
+End BitwiseNotations.
 
 (** * Conversion to and from [Z] *)
 
@@ -326,15 +329,17 @@ Definition wlt sz (l r : word sz) : Prop :=
 Definition wslt sz (l r : word sz) : Prop :=
   Z.lt (wordToZ l) (wordToZ r).
 
-Notation "w1 > w2" := (@wlt _ w2%word w1%word) : word_scope.
-Notation "w1 >= w2" := (~(@wlt _ w1%word w2%word)) : word_scope.
-Notation "w1 < w2" := (@wlt _ w1%word w2%word) : word_scope.
-Notation "w1 <= w2" := (~(@wlt _ w2%word w1%word)) : word_scope.
+Module Import ComparisonNotations.
+  Notation "w1 > w2" := (@wlt _ w2%word w1%word) : word_scope.
+  Notation "w1 >= w2" := (~(@wlt _ w1%word w2%word)) : word_scope.
+  Notation "w1 < w2" := (@wlt _ w1%word w2%word) : word_scope.
+  Notation "w1 <= w2" := (~(@wlt _ w2%word w1%word)) : word_scope.
 
-Notation "w1 '>s' w2" := (@wslt _ w2%word w1%word) (at level 70, w2 at next level) : word_scope.
-Notation "w1 '>s=' w2" := (~(@wslt _ w1%word w2%word)) (at level 70, w2 at next level) : word_scope.
-Notation "w1 '<s' w2" := (@wslt _ w1%word w2%word) (at level 70, w2 at next level) : word_scope.
-Notation "w1 '<s=' w2" := (~(@wslt _ w2%word w1%word)) (at level 70, w2 at next level) : word_scope.
+  Notation "w1 '>s' w2" := (@wslt _ w2%word w1%word) : word_scope.
+  Notation "w1 '>s=' w2" := (~(@wslt _ w1%word w2%word)) : word_scope.
+  Notation "w1 '<s' w2" := (@wslt _ w1%word w2%word) : word_scope.
+  Notation "w1 '<s=' w2" := (~(@wslt _ w2%word w1%word)) : word_scope.
+End ComparisonNotations.
 
 Definition wlt_dec : forall sz (l r : word sz), {l < r} + {l >= r}.
   refine (fun sz l r =>
@@ -358,8 +363,10 @@ Definition wltb{sz: nat}(l r: word sz): bool := BinNat.N.ltb (wordToN l) (wordTo
 
 Definition wsltb{sz: nat}(l r: word sz): bool := Z.ltb (wordToZ l) (wordToZ r).
 
-Notation "$ n" := (natToWord _ n) (at level 0).
-Notation "# n" := (wordToNat n) (at level 0).
+Module Import ConversionNotations.
+  Notation "$ n" := (natToWord _ n) : word_scope.
+  Notation "# n" := (wordToNat n).
+End ConversionNotations.
 
 (** * Bit shifting *)
 
@@ -422,8 +429,10 @@ Fixpoint wpow2 sz: word (S sz) :=
   | S sz' => (wpow2 sz')~0
   end.
 
-Notation "l ^<< r" := (@wlshift _ _ l%word r%word) (at level 35).
-Notation "l ^>> r" := (@wrshift _ _ l%word r%word) (at level 35).
+Module Import ShiftNotations.
+  Notation "l ^<< r" := (@wlshift _ _ l%word r%word) : word_scope.
+  Notation "l ^>> r" := (@wrshift _ _ l%word r%word) : word_scope.
+End ShiftNotations.
 
 (** * Setting an individual bit *)
 
@@ -7294,3 +7303,11 @@ Qed.
 
 Local Close Scope nat.
 Close Scope word_scope.
+
+Module Notations.
+  Export ArithmeticNotations.
+  Export BitwiseNotations.
+  Export ComparisonNotations.
+  Export ConversionNotations.
+  Export ShiftNotations.
+End Notations.
