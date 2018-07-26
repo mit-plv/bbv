@@ -1,6 +1,6 @@
 (** Fixed precision machine words *)
 
-Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.omega.Omega.
+Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.ZArith.ZArith.
 Require Import Coq.Logic.Eqdep_dec Coq.Logic.EqdepFacts.
 Require Import Coq.Program.Tactics Coq.Program.Equality.
 Require Import Coq.setoid_ring.Ring.
