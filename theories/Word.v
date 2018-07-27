@@ -1469,6 +1469,13 @@ Proof.
   - reflexivity.
 Qed.
 
+Lemma weqb_false: forall sz (a b: word sz), weqb a b = false -> a <> b.
+Proof.
+  intros. destruct (weqb a b) eqn: E.
+  - discriminate.
+  - intro C. subst. rewrite weqb_eq in E; congruence.
+Qed.
+
 Ltac is_nat_cst n :=
   match eval hnf in n with
     | O => constr:(true)
