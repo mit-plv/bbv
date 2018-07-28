@@ -7,4 +7,5 @@
    instead of Word.v. *)
 
 Require Export bbv.Word.
+Export Word.Notations.
 Open Scope word_scope.
