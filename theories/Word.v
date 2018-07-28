@@ -422,8 +422,8 @@ Fixpoint wpow2 sz: word (S sz) :=
   | S sz' => (wpow2 sz')~0
   end.
 
-Notation "l ^<< r" := (@wlshift _ _ l%word r%word) (at level 35).
-Notation "l ^>> r" := (@wrshift _ _ l%word r%word) (at level 35).
+Notation "l ^<< r" := (@wlshift _ l%word r) (at level 35).
+Notation "l ^>> r" := (@wrshift _ l%word r) (at level 35).
 
 (** * Setting an individual bit *)
 
