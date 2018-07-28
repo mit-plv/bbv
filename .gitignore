@@ -4,7 +4,5 @@
 *.d
 .depend
 .*.cache
-_CoqProject
-Makefile.coq.conf
-Makefile.coq
-html/
+Makefile.coq.all.conf
+Makefile.coq.all

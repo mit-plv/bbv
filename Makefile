@@ -1,26 +1,17 @@
-default_target: all
+VS:=$(shell find . -type f -name '*.v')
 
-COQMAKEFILE=$(COQBIN)coq_makefile
+.PHONY: coq clean force
 
-all: Makefile.coq
-	$(MAKE) -f Makefile.coq
+coq: Makefile.coq.all $(VS)
+	$(MAKE) -f Makefile.coq.all
 
-doc: all
-	$(MAKE) -f Makefile.coq html
+Makefile.coq.all: force
+	$(COQBIN)coq_makefile -f _CoqProject $(VS) -o Makefile.coq.all
 
-html: doc
+force:
 
-clean: Makefile.coq
-	$(MAKE) -f Makefile.coq clean
-	rm -f Makefile.coq Makefile.coq.conf _CoqProject
+clean:: Makefile.coq.all
+	$(MAKE) -f Makefile.coq.all clean
+	rm -rf *.v.d *.glob *.vo *~ *.hi *.o
+	rm -f Makefile.coq.all Makefile.coq.all.conf
 
-install: Makefile.coq
-	$(MAKE) -f Makefile.coq install
-
-Makefile.coq: _CoqProject
-	$(COQMAKEFILE) -f _CoqProject -o Makefile.coq
-
-_CoqProject::
-	rm -f _CoqProject
-	echo "-Q theories bbv" > _CoqProject
-	find theories -type f -name '*.v' | sort >> _CoqProject
