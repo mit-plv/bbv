@@ -430,8 +430,8 @@ Fixpoint wpow2 sz: word (S sz) :=
   end.
 
 Module Import ShiftNotations.
-  Notation "l ^<< r" := (@wlshift _ l%word r) : word_scope.
-  Notation "l ^>> r" := (@wrshift _ l%word r) : word_scope.
+  Notation "l ^<< r" := (@wlshift' _ l%word r) : word_scope.
+  Notation "l ^>> r" := (@wrshift' _ l%word r) : word_scope.
 End ShiftNotations.
 
 (** * Setting an individual bit *)
