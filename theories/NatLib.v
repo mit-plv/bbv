@@ -381,12 +381,12 @@ Qed.
 Theorem Npow2_nat : forall n, nat_of_N (Npow2 n) = pow2 n.
   induction n as [|n IHn]; simpl; intuition.
   rewrite <- IHn; clear IHn.
-  case_eq (Npow2 n); intuition.
-  rewrite untimes2.
+  case_eq (Npow2 n); intuition;
+  rewrite untimes2;
   match goal with
   | [ |- context[Npos ?p~0] ]
     => replace (Npos p~0) with (N.double (Npos p)) by reflexivity
-  end.
+  end;
   apply nat_of_Ndouble.
 Qed.
 
