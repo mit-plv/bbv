@@ -1,5 +1,5 @@
 Require Import Coq.Arith.Div2.
-Require Import Coq.omega.Omega.
+Require Import Coq.micromega.Lia.
 Require Import Coq.NArith.NArith.
 Require Import Coq.ZArith.ZArith.
 
@@ -378,17 +378,17 @@ Proof.
   induction sz; simpl; auto; omega.
 Qed.
 
+Section omega_compat.
+
+Ltac omega ::= lia.
+
 Theorem Npow2_nat : forall n, nat_of_N (Npow2 n) = pow2 n.
   induction n as [|n IHn]; simpl; intuition.
   rewrite <- IHn; clear IHn.
   case_eq (Npow2 n); intuition.
-  rewrite untimes2.
-  match goal with
-  | [ |- context[Npos ?p~0] ]
-    => replace (Npos p~0) with (N.double (Npos p)) by reflexivity
-  end.
-  apply nat_of_Ndouble.
 Qed.
+
+End omega_compat.
 
 Theorem pow2_N : forall n, Npow2 n = N.of_nat (pow2 n).
 Proof.
