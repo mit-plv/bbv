@@ -1,6 +1,6 @@
 (** Fixed precision machine words *)
 
-Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.omega.Omega.
+Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.ZArith.ZArith.
 Require Import Coq.Logic.Eqdep_dec Coq.Logic.EqdepFacts.
 Require Import Coq.Program.Tactics Coq.Program.Equality.
 Require Import Coq.setoid_ring.Ring.
@@ -430,8 +430,8 @@ Fixpoint wpow2 sz: word (S sz) :=
   end.
 
 Module Import ShiftNotations.
-  Notation "l ^<< r" := (@wlshift _ l%word r) : word_scope.
-  Notation "l ^>> r" := (@wrshift _ l%word r) : word_scope.
+  Notation "l ^<< r" := (@wlshift' _ l%word r) : word_scope.
+  Notation "l ^>> r" := (@wrshift' _ l%word r) : word_scope.
 End ShiftNotations.
 
 (** * Setting an individual bit *)

@@ -1,6 +1,7 @@
-(* Make [omega] work for [N] *)
+(* Make [lia] work for [N] *)
 
-Require Import Coq.Arith.Arith Coq.omega.Omega Coq.NArith.NArith.
+Require Import Coq.Arith.Arith Coq.micromega.Lia Coq.NArith.NArith.
+Require Import Coq.ZArith.ZArith.
 
 Local Open Scope N_scope.
 
@@ -21,12 +22,17 @@ Theorem Nneq_in : forall n m,
   congruence.
 Qed.
 
+Section omega_compat.
+
+Local Ltac omega ::= lia.
+
 Theorem Nneq_out : forall n m,
   n <> m
   -> nat_of_N n <> nat_of_N m.
   intuition.
-  match goal with H0 : _ |- _ => apply nat_of_N_eq in H0; tauto end.
 Qed.
+
+End omega_compat.
 
 Theorem Nlt_out : forall n m, n < m
   -> (nat_of_N n < nat_of_N m)%nat.
