@@ -7308,6 +7308,71 @@ Proof.
   apply NToWord_0.
 Qed.
 
+Lemma combine_zero_general sz1 sz2:
+  forall (w: word sz1) (b: word sz2), (combine w b = $ 0 -> w = $ 0 /\ b = $ 0)%word.
+Proof.
+  intros.
+  pre_word_omega.
+  rewrite wordToNat_combine in *.
+  assert (sth1: wordToNat w = 0) by lia.
+  pose proof (pow2_zero sz1) as sth2.
+  assert (sth3: wordToNat b = 0) by nia.
+  split; eapply wordToNat_zero; eauto.
+Qed.
+
+Lemma combine_lt sz1 sz2:
+  forall (w1 w2: word sz1) (b1 b2: word sz2), (combine w1 b1 < combine w2 b2 ->
+                                               b1 <= b2)%word.
+Proof.
+  intros.
+  pre_word_omega.
+  rewrite ?wordToNat_combine in *.
+  pose proof (pow2_zero sz1).
+  pose proof (wordToNat_bound w1).
+  pose proof (wordToNat_bound w2).
+  nia.
+Qed.
+
+Lemma split2_le sz1 sz2:
+  forall (w1 w2: word (sz1 + sz2)), (w1 <= w2 ->
+                                     split2 _ _ w1 <= split2 _ _ w2)%word.
+Proof.
+  intros.
+  pre_word_omega.
+  rewrite ?wordToNat_split2.
+  pose proof (pow2_zero sz1).
+  apply Nat.div_le_mono; auto.
+  Omega.omega.
+Qed.
+
+Lemma word1_neq': forall w : word 1, w <> WO~1 -> w = WO~0.
+Proof.
+  intros.
+  shatter_word w.
+  destruct x; auto; tauto.
+Qed.
+
+Lemma combine_ge sz1 sz2 (x1 y1: word sz1) (x2 y2: word sz2):
+  (combine x1 x2 <= combine y1 y2 ->
+   x2 < y2 \/ (x2 = y2 /\ x1 <= y1))%word.
+Proof.
+  intros.
+  pre_word_omega.
+  rewrite ?wordToNat_combine in *.
+  pose proof (pow2_zero sz1).
+  pose proof (pow2_zero sz2).
+  destruct (weq x2 y2); subst.
+  - right; split; auto.
+    word_omega.
+  - left.
+    pose proof (wordToNat_bound x1).
+    pose proof (wordToNat_bound y1).
+    pre_word_omega.
+    nia.
+Qed.
+
+
+
 Local Close Scope nat.
 Close Scope word_scope.
 
