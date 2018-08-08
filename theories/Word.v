@@ -7016,7 +7016,7 @@ Proof.
   apply N2Z.id.
 Qed.
 
-Lemma uwordToZ_ZToWord_0: forall (z : Z) (sz : nat),
+Lemma uwordToZ_ZToWord_0: forall (sz : nat) (z : Z),
     (0 <= z < Z.of_N (Npow2 sz))%Z ->
     uwordToZ (ZToWord sz z) = z.
 Proof.
@@ -7032,7 +7032,7 @@ Proof.
   assumption.
 Qed.
 
-Lemma uwordToZ_ZToWord: forall (z : Z) (sz : nat),
+Lemma uwordToZ_ZToWord: forall (sz : nat) (z : Z),
     (0 <= z < 2 ^ (Z.of_nat sz))%Z ->
     uwordToZ (ZToWord sz z) = z.
 Proof.
