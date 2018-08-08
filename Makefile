@@ -15,3 +15,8 @@ clean:: Makefile.coq.all
 	rm -rf *.v.d *.glob *.vo *~ *.hi *.o
 	rm -f Makefile.coq.all Makefile.coq.all.conf
 
+install: Makefile.coq.all
+	$(MAKE) -f Makefile.coq.all install
+
+uninstall: Makefile.coq.all
+	$(MAKE) -f Makefile.coq.all uninstall
