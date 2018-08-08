@@ -2,7 +2,7 @@ Require Import Coq.Arith.Div2.
 Require Import Coq.micromega.Lia.
 Require Import Coq.NArith.NArith.
 Require Import Coq.ZArith.ZArith.
-
+Require Import bbv.N_Z_nat_conversions.
 Require Export bbv.Nomega.
 
 Set Implicit Arguments.
@@ -393,6 +393,15 @@ End omega_compat.
 Theorem pow2_N : forall n, Npow2 n = N.of_nat (pow2 n).
 Proof.
   intro n. apply nat_of_N_eq. rewrite Nat2N.id. apply Npow2_nat.
+Qed.
+
+Lemma Z_of_N_Npow2: forall n, Z.of_N (Npow2 n) = (2 ^ Z.of_nat n)%Z.
+Proof.
+  intros.
+  rewrite pow2_N.
+  rewrite nat_N_Z.
+  rewrite Nat2Z.inj_pow.
+  reflexivity.
 Qed.
 
 Lemma pow2_S_z:

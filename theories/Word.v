@@ -7,6 +7,7 @@ Require Import Coq.setoid_ring.Ring.
 Require Import Coq.setoid_ring.Ring_polynom.
 Require Import bbv.Nomega.
 Require Export bbv.ZLib bbv.NatLib bbv.NLib.
+Require Export bbv.N_Z_nat_conversions.
 Require Export bbv.DepEq bbv.DepEqNat.
 Require Import bbv.ReservedNotations.
 
@@ -1453,6 +1454,14 @@ Lemma wminus_diag: forall sz (w: word sz),
     w ^- w = $0.
 Proof.
   intros. unfold wminus. apply wminus_inv.
+Qed.
+
+Lemma wneg_0_wminus: forall {sz: nat} (x: word sz),
+    ^~ x = $0 ^- x.
+Proof.
+  intros.
+  rewrite <- wplus_unit at 1.
+  reflexivity.
 Qed.
 
 Definition wring (sz : nat) : ring_theory (wzero sz) (wone sz) (@wplus sz) (@wmult sz) (@wminus sz) (@wneg sz) (@eq _) :=
@@ -4819,6 +4828,20 @@ Proof.
         }
 Qed.
 
+Lemma wordToZ_ZToWord'': forall (sz: nat),
+    (0 < sz)%nat ->
+    forall n: Z,
+      (- 2 ^ (Z.of_nat sz - 1) <= n < 2 ^ (Z.of_nat sz - 1))%Z ->
+      wordToZ (ZToWord sz n) = n.
+Proof.
+  intros.
+  destruct sz; [lia|].
+  apply wordToZ_ZToWord.
+  replace (Z.of_nat (S sz) - 1)%Z with (Z.of_nat sz) in * by lia.
+  rewrite Nat2Z.inj_pow.
+  assumption.
+Qed.
+
 Lemma wordToZ_wordToN:
   forall sz (w: word sz),
     wordToZ w = (Z.of_N (wordToN w) - Z.of_N (if wmsb w false then Npow2 sz else 0))%Z.
@@ -4869,6 +4892,18 @@ Qed.
 Lemma ZToWord_sz0: forall z, ZToWord 0 z = $0.
 Proof.
   intros. unfold ZToWord. destruct z; try rewrite posToWord_sz0; reflexivity.
+Qed.
+
+Lemma ZToWord_0: forall sz, ZToWord sz 0 = wzero sz.
+Proof.
+  intros. unfold ZToWord. apply wzero'_def.
+Qed.
+
+Lemma ZToWord_1{sz : nat}: ZToWord sz 1 = wone sz.
+Proof.
+  intros.
+  rewrite <- natToWord_Z_to_nat by (cbv; discriminate).  
+  reflexivity.
 Qed.
 
 Lemma natToWord_pow2_add:
@@ -5048,6 +5083,19 @@ Proof.
     rewrite <- positive_nat_Z. apply ZToWord_Npow2_add_k.
 Qed.
 
+Lemma ZToWord_Npow2_add_k':  forall sz z k,
+    ZToWord sz (z + k * Z.of_N (Npow2 sz)) = ZToWord sz z.
+Proof.
+  intros. assert (0 <= k \/ k < 0)%Z as C by lia. destruct C as [C | C].
+  - pose proof (ZToWord_Npow2_add_k sz z (Z.to_nat k)) as Q.
+    rewrite Znat.Z2Nat.id in Q; assumption.
+  - pose proof (ZToWord_Npow2_sub_k sz z (Z.to_nat (- k))) as Q.
+    rewrite Znat.Z2Nat.id in Q by lia.
+    rewrite <- Q.
+    f_equal.
+    lia.
+Qed.    
+
 Lemma wordToZ_ZToWord': forall sz w,
     exists k, wordToZ (ZToWord sz w) = (w - k * Z.of_N (Npow2 sz))%Z.
 Proof.
@@ -5088,6 +5136,12 @@ Proof.
   apply ZToWord_Npow2_sub_z.
 Qed.
 
+Lemma wplus_Z:  forall sz (a b : word sz),
+    a ^+ b = ZToWord sz (wordToZ a + wordToZ b).
+Proof.
+  intros. rewrite ZToWord_plus. rewrite! ZToWord_wordToZ. reflexivity.
+Qed.
+
 Lemma else_0_to_ex_N: forall (b: bool) (a: N),
     exists k, (if b then a else 0%N) = (k * a)%N.
 Proof.
@@ -5124,9 +5178,10 @@ Proof.
   apply ZToWord_Npow2_sub_z.
 Qed.
 
-Lemma ZToWord_0: forall sz, ZToWord sz 0 = wzero sz.
+Lemma wmult_Z:  forall sz (a b : word sz),
+    a ^* b = ZToWord sz (wordToZ a * wordToZ b).
 Proof.
-  intros. unfold ZToWord. apply wzero'_def.
+  intros. rewrite ZToWord_mult. rewrite! ZToWord_wordToZ. reflexivity.
 Qed.
 
 Lemma wordToZ_wplus_bound:
@@ -5233,6 +5288,19 @@ Proof.
   destruct H.
   apply Z.abs_le.
   split; omega.
+Qed.
+
+Lemma wordToZ_size'': forall (sz : nat),
+    (0 < sz)%nat ->
+    forall  w : word sz,
+      (- 2 ^ (Z.of_nat sz - 1) <= wordToZ w < 2 ^ (Z.of_nat sz - 1))%Z.
+Proof.
+  intros.
+  destruct sz; [lia|].
+  pose proof (@wordToZ_size' sz w) as P.
+  replace (Z.of_nat (S sz) - 1)%Z with (Z.of_nat sz) by lia.
+  rewrite Nat2Z.inj_pow in P.
+  exact P.
 Qed.
 
 Lemma wneg_wzero:
@@ -5539,6 +5607,60 @@ Proof.
   rewrite wminusZ_helper.
   symmetry.
   apply ZToWord_Npow2_sub_z.
+Qed.
+
+Lemma wminus_Z: forall sz (a b : word sz),
+    a ^- b = ZToWord sz (wordToZ a - wordToZ b).
+Proof.
+  intros. rewrite ZToWord_minus. rewrite! ZToWord_wordToZ. reflexivity.
+Qed.
+
+Lemma ZToWord_opp_wneg{sz: nat}: forall (x: Z),
+    ZToWord sz (- x) = ^~ (ZToWord sz x).
+Proof.
+  intros.
+  rewrite wneg_0_wminus.
+  rewrite wminus_wminusZ.
+  unfold wminusZ, wordBinZ.
+  rewrite wordToZ_wzero.
+  rewrite (Z.sub_0_l (wordToZ (ZToWord sz x))).
+  destruct (wordToZ_ZToWord' sz x) as [k E].
+  rewrite E.
+  rewrite Z.opp_sub_distr.
+  rewrite ZToWord_Npow2_add_k'.
+  reflexivity.
+Qed.
+
+Lemma Zeqb_true_ZToWord: forall {sz: nat} (x y: Z),
+    (x =? y)%Z = true ->
+    ZToWord sz x = ZToWord sz y.
+Proof.
+  intros. apply Z.eqb_eq in H. congruence.
+Qed.
+
+Lemma word_ring_theory_Z: forall (sz: nat),
+    ring_theory (ZToWord sz 0) (ZToWord sz 1)
+                (@wplus sz) (@wmult sz) (@wminus sz) (@wneg sz) eq.
+Proof.
+  intros.
+  rewrite ZToWord_0.
+  rewrite ZToWord_1.
+  apply wring.
+Qed.
+
+Lemma word_ring_morph_Z: forall (sz: nat),
+    ring_morph (ZToWord sz 0) (ZToWord sz 1) (@wplus sz) (@wmult sz) (@wminus sz) (@wneg sz)
+               eq 0%Z 1%Z Z.add Z.mul Z.sub Z.opp Z.eqb
+               (ZToWord sz).
+Proof.
+  constructor.
+  + reflexivity.
+  + reflexivity.
+  + exact (@ZToWord_plus sz).
+  + exact (@ZToWord_minus sz).
+  + exact (@ZToWord_mult sz).
+  + exact (@ZToWord_opp_wneg sz).
+  + exact (@Zeqb_true_ZToWord sz).
 Qed.
 
 Lemma extz_zero:
@@ -6832,66 +6954,13 @@ Proof.
     + rewrite <- E. apply wordToN_bound.
 Qed.
 
-Lemma N_to_Z_to_nat: forall (a: N), Z.to_nat (Z.of_N a) = N.to_nat a.
-Proof.
-  intros. rewrite <- (N2Z.id a) at 2.
-  rewrite Z_N_nat. reflexivity.
-Qed.
-
-Section ThisShouldBeInCoqLibrary.
-
-  Lemma N2Nat_inj_mod: forall (a b: N),
-      (b <> 0)%N ->
-      N.to_nat (a mod b)%N = (N.to_nat a) mod (N.to_nat b).
-  Proof.
-    intros.
-    rewrite <-? N_to_Z_to_nat.
-    rewrite N2Z.inj_mod by assumption.
-    apply Nat2Z.inj.
-    rewrite Zdiv.mod_Zmod.
-    - rewrite? Z2Nat.id; try apply N2Z.is_nonneg.
-      + reflexivity.
-      + pose proof (Z.mod_pos_bound (Z.of_N a) (Z.of_N b)) as Q.
-        destruct Q as [Q _].
-        * destruct b; try contradiction. simpl. constructor.
-        * exact Q.
-    - destruct b; try contradiction. simpl.
-      pose proof (Pos2Nat.is_pos p) as Q. omega.
-  Qed.
-
-  Lemma Nat2Z_inj_pow: forall n m : nat,
-      Z.of_nat (n ^ m) = (Z.of_nat n ^ Z.of_nat m)%Z.
-  Proof.
-    intros. induction m.
-    - reflexivity.
-    - rewrite Nat2Z.inj_succ.
-      rewrite Z.pow_succ_r by (apply Nat2Z.is_nonneg).
-      rewrite <- IHm.
-      rewrite <- Nat2Z.inj_mul.
-      reflexivity.
-  Qed.
-
-  Lemma Z2Nat_inj_pow: forall n m : Z,
-      (0 <= n)%Z ->
-      (0 <= m)%Z ->
-      Z.to_nat (n ^ m) = Z.to_nat n ^ Z.to_nat m.
-  Proof.
-    intros.
-    pose proof (Nat2Z_inj_pow (Z.to_nat n) (Z.to_nat m)) as P.
-    rewrite? Z2Nat.id in P by assumption.
-    rewrite <- P.
-    apply Nat2Z.id.
-  Qed.
-
-End ThisShouldBeInCoqLibrary.
-
 Lemma wordToNat_mod: forall sz (a b: word sz),
     b <> $0 ->
     #(a ^% b) = #a mod #b.
 Proof.
   intros.
   rewrite <-? wordToN_to_nat in *.
-  rewrite <-? N2Nat_inj_mod in *.
+  rewrite <-? N2Nat.inj_mod in *.
   - rewrite wordToN_mod by assumption.
     reflexivity.
   - intro. apply H. replace 0%N with (wordToN (natToWord sz 0)) in H0.
@@ -6924,7 +6993,7 @@ Lemma wlshift_mul_Zpow2: forall sz n (a: word sz),
 Proof.
   intros. rewrite wlshift_mul_pow2. f_equal.
   change 2 with (Z.to_nat 2).
-  rewrite <- Z2Nat_inj_pow by omega.
+  rewrite <- Z2Nat.inj_pow by omega.
   apply natToWord_Z_to_nat.
   apply Z.pow_nonneg.
   omega.
@@ -7039,10 +7108,32 @@ Proof.
   intros. apply uwordToZ_ZToWord_0.
   intuition idtac.
   change 2%Z with (Z.of_nat 2) in H1.
-  rewrite <- Nat2Z_inj_pow in H1.
+  rewrite <- Nat2Z.inj_pow in H1.
   rewrite <- N_nat_Z.
   rewrite Npow2_nat.
   assumption.
+Qed.
+
+Lemma uwordToZ_bound: forall sz (a: word sz),
+    (0 <= uwordToZ a < 2 ^ Z.of_nat sz)%Z.
+Proof.
+  intros.
+  unfold uwordToZ.
+  split.
+  + apply N2Z.is_nonneg.
+  + pose proof (wordToN_bound a) as P.
+    apply N2Z.inj_lt in P.
+    rewrite Z_of_N_Npow2 in P.
+    assumption.
+Qed.
+
+Lemma ZToWord_uwordToZ: forall sz (a: word sz),
+    ZToWord sz (uwordToZ a) = a.
+Proof.
+  intros.
+  unfold uwordToZ.
+  rewrite ZToWord_Z_of_N.
+  apply NToWord_wordToN.  
 Qed.
 
 Lemma wordToN_neq_0: forall sz (b : word sz),
@@ -7114,7 +7205,7 @@ Proof.
   pose proof (Npow2_not_zero sz).
   apply Nnat.N2Nat.inj.
   rewrite wordToN_to_nat.
-  rewrite N2Nat_inj_mod by assumption.
+  rewrite N2Nat.inj_mod by assumption.
   rewrite Npow2_nat.
   rewrite <- wordToNat_natToWord_eqn.
   rewrite <- NToWord_nat.
