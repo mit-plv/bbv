@@ -63,4 +63,3 @@ Proof.
   rewrite nat_cast_same.
   auto.
 Qed.
- 

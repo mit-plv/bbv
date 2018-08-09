@@ -133,7 +133,7 @@ Proof.
   destruct n.
   - constructor.
   - destruct n.
-    + simpl. constructor. constructor. 
+    + simpl. constructor. constructor.
     + simpl (Nat.div2 (S (S n))).
       specialize (IH n). omega.
 Qed.
@@ -555,7 +555,7 @@ Proof.
       rewrite H. rewrite H0.
       apply Z.mod_0_l.
       omega.
-Qed.      
+Qed.
 
 Lemma mul_div_exact: forall (a b: nat),
     b <> 0 ->

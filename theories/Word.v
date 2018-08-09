@@ -4902,7 +4902,7 @@ Qed.
 Lemma ZToWord_1{sz : nat}: ZToWord sz 1 = wone sz.
 Proof.
   intros.
-  rewrite <- natToWord_Z_to_nat by (cbv; discriminate).  
+  rewrite <- natToWord_Z_to_nat by (cbv; discriminate).
   reflexivity.
 Qed.
 
@@ -5094,7 +5094,7 @@ Proof.
     rewrite <- Q.
     f_equal.
     lia.
-Qed.    
+Qed.
 
 Lemma wordToZ_ZToWord': forall sz w,
     exists k, wordToZ (ZToWord sz w) = (w - k * Z.of_N (Npow2 sz))%Z.
@@ -7133,7 +7133,7 @@ Proof.
   intros.
   unfold uwordToZ.
   rewrite ZToWord_Z_of_N.
-  apply NToWord_wordToN.  
+  apply NToWord_wordToN.
 Qed.
 
 Lemma wordToN_neq_0: forall sz (b : word sz),

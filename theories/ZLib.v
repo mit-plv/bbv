@@ -42,7 +42,7 @@ Proof.
     rewrite H. rewrite H0.
     apply Z.mod_0_l.
     assumption.
-Qed.      
+Qed.
 
 Lemma mod_add_r: forall a b,
     b <> 0 ->
