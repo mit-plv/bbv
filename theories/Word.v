@@ -7114,6 +7114,40 @@ Proof.
   assumption.
 Qed.
 
+Lemma NToWord_Z_to_N: forall sz n,
+    (0 <= n)%Z ->
+    NToWord sz (Z.to_N n) = ZToWord sz n.
+Proof.
+  intros.
+  rewrite <- ZToWord_Z_of_N.
+  rewrite Z2N.id by assumption.
+  reflexivity.
+Qed.
+
+Lemma uwordToZ_ZToWord_k: forall (sz : nat) (n : Z),
+    (0 <= n)%Z ->
+    exists k, uwordToZ (ZToWord sz n) = (n - k * 2 ^ Z.of_nat sz)%Z /\ (k * 2 ^ Z.of_nat sz <= n)%Z.
+Proof.
+  intros *. intro C.
+  unfold uwordToZ.
+  pose proof (wordToN_NToWord sz (Z.to_N n)) as P.
+  destruct P as [k [P Q]].
+  exists (Z.of_N k).
+  rewrite NToWord_Z_to_N in P by assumption.
+  rewrite P. clear P.
+  rewrite <- Z_of_N_Npow2 in *.
+  rewrite <- N2Z.inj_mul.
+  rewrite N2Z.inj_sub by assumption.
+  apply N2Z.inj_le in Q.
+  rewrite Z2N.id in * by assumption.
+  auto.
+Qed.
+
+Lemma Zpow2_pos: forall n, (2 ^ Z.of_nat n > 0)%Z.
+Proof.
+  intros. pose proof (Z.pow_pos_nonneg 2 (Z.of_nat n)). omega.
+Qed.
+
 Lemma uwordToZ_bound: forall sz (a: word sz),
     (0 <= uwordToZ a < 2 ^ Z.of_nat sz)%Z.
 Proof.
@@ -7125,6 +7159,23 @@ Proof.
     apply N2Z.inj_lt in P.
     rewrite Z_of_N_Npow2 in P.
     assumption.
+Qed.
+
+Lemma uwordToZ_ZToWord_mod: forall (sz : nat) (z : Z),
+    (0 <= z)%Z ->
+    uwordToZ (ZToWord sz z) = (z mod 2 ^ (Z.of_nat sz))%Z.
+Proof.
+  intros.
+  pose proof (uwordToZ_ZToWord_k sz H) as P.
+  destruct P as [k [P Q]].
+  pose proof (uwordToZ_bound (ZToWord sz z)) as B.
+  rewrite P in *. clear P.
+  rewrite Zmod_eq by (apply Zpow2_pos).
+  pose proof (Z.div_unique_pos z (2 ^ Z.of_nat sz) k (z - k * 2 ^ Z.of_nat sz)) as U.
+  rewrite U.
+  - reflexivity.
+  - omega.
+  - rewrite Z.mul_comm. omega.
 Qed.
 
 Lemma ZToWord_uwordToZ: forall sz (a: word sz),
