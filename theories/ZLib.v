@@ -83,7 +83,7 @@ Qed.
 
 Lemma mod_pow2_same_bounds: forall a n,
     a mod 2 ^ n = a ->
-    0 < n ->
+    0 <= n ->
     0 <= a < 2 ^ n.
 Proof.
   intros. rewrite <- H. apply Z.mod_pos_bound.
