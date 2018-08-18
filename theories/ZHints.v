@@ -63,7 +63,6 @@ Hint Rewrite
      Z.pow_0_r
      Z_mod_mult
      Z.land_ldiff
-     Zmod_div
      Z.mod_1_r
      Z.lxor_lnot_lnot
      Z.land_m1_l
