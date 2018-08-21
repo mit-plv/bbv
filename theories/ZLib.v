@@ -235,3 +235,10 @@ Lemma two_digits_encoding_inj_hi: forall base a b c d: Z,
 Proof.
   intros. nia.
 Qed.
+
+Lemma Z_to_nat_neg: forall (n: Z),
+    n < 0 ->
+    Z.to_nat n = 0%nat.
+Proof.
+  intros. destruct n; try lia. apply Z2Nat.inj_neg.
+Qed.
