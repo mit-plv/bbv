@@ -3,7 +3,7 @@
    https://github.com/arthuraa/poleiro/blob/master/theories/ForceOption.v
    to produce N instead of nat *)
 
-Require Import Coq.Strings.String.
+Require Export Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
 Require Import Coq.NArith.NArith.
 
