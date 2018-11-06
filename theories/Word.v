@@ -1293,6 +1293,15 @@ Theorem roundTrip_1 : forall sz, wordToNat (natToWord (S sz) 1) = 1.
   induction sz; simpl in *; intuition.
 Qed.
 
+Theorem roundTrip_1': forall sz, sz <> 0 -> wordToNat (natToWord sz 1) = 1.
+Proof.
+  intros.
+  destruct sz.
+  - tauto.
+  - apply roundTrip_1.
+Qed.
+
+
 Theorem mod2_WS : forall sz (x : word sz) b, mod2 (wordToNat (WS b x)) = b.
   intros sz x b. rewrite wordToNat_wordToNat'.
   destruct b; simpl.
