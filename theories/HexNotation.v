@@ -32,7 +32,7 @@ Definition hexDigitToN (c : ascii) : option N :=
     | _   => None
   end.
 
-Open Scope string_scope.
+Local Open Scope string_scope.
 
 Fixpoint readHexNAux (s : string) (acc : N) : option N :=
   match s with
@@ -73,3 +73,31 @@ Proof. reflexivity. Qed.
 
 Goal hex"ff34c8e3" = 4281649379.
 Proof. reflexivity. Qed.
+Local Close Scope string_scope.
+Local Close Scope N_scope.
+
+Definition binDigitToNat (c : ascii) : option nat :=
+  match c with
+    | "0" => Some 0
+    | "1" => Some 1
+    | _   => None
+  end.
+
+Open Scope string_scope.
+
+Fixpoint readBinAux (s : string) (acc : nat) : option nat :=
+  match s with
+    | "" => Some acc
+    | String c s' =>
+      match binDigitToNat c with
+        | Some n => readBinAux s' (2 * acc + n)
+        | None => None
+      end
+  end.
+
+Definition readBinNat (s : string) : option nat := readBinAux s 0.
+
+Goal readBinNat "01" = Some 1.
+Proof. reflexivity. Qed.
+
+Definition bin (s : string) := @forceOption nat parseError (readBinNat s) ParseError.
