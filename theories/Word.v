@@ -1720,6 +1720,19 @@ Proof.
   unfold wor; induction sz; shatterer.
 Qed.
 
+Lemma wor_idemp
+  :  forall (n : nat) (x0 : word n), x0 ^| x0 = x0.
+Proof.
+  (intros).
+  (induction x0).
+  reflexivity.
+  (rewrite <- IHx0 at 3).
+  (unfold wor).
+  (simpl).
+  (rewrite orb_diag).
+  reflexivity.
+Qed.
+
 Lemma wand_wones : forall sz w, wones sz ^& w = w.
 Proof.
   unfold wand; induction sz; shatterer.
