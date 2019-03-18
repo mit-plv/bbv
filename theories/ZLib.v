@@ -240,5 +240,5 @@ Lemma Z_to_nat_neg: forall (n: Z),
     n < 0 ->
     Z.to_nat n = 0%nat.
 Proof.
-  intros. destruct n; try lia. apply Z2Nat.inj_neg.
+  intros. destruct n; (lia||reflexivity).
 Qed.
