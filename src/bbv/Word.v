@@ -7187,6 +7187,49 @@ Proof.
   - rewrite Z.mul_comm. omega.
 Qed.
 
+Section ZScope.
+  Local Open Scope Z_scope.
+  Lemma uwordToZ_ZToWord_full
+    (sz : nat) (width_nonneg : (0 < sz)%nat) (z : Z)
+    : uwordToZ (ZToWord sz z)
+      = z mod 2 ^ Z.of_nat sz.
+  Proof.
+    rewrite <-(ZToWord_Npow2_sub_z sz z (-Z.abs z)).
+    rewrite Z_of_N_Npow2.
+    rewrite uwordToZ_ZToWord_mod, <-Zminus_mod_idemp_r, Z_mod_mult, Z.sub_0_r; trivial.
+    eapply Zle_minus_le_0.
+    rewrite Z.mul_opp_l.
+    replace z with (-(-z)) at 2 by Lia.lia.
+    rewrite <-Z.opp_le_mono.
+    etransitivity; cycle 1.
+    { eapply Z.mul_le_mono_nonneg_l; [Lia.lia|].
+      eapply Z.pow_le_mono_r; [Lia.lia|].
+      instantiate (1:= 1); Lia.lia. }
+    change (2^1) with 2.
+    Lia.lia.
+  Qed.
+
+  Lemma wordToZ_ZToWord_full sz (H: (0 < sz)%nat) (z:Z) :
+    wordToZ (ZToWord sz z) =
+    ( wordToZ (ZToWord sz z)
+      + 2 ^ (Z.of_nat sz - 1)
+    ) mod (2 ^ Z.of_nat sz)
+    - 2 ^ (Z.of_nat sz - 1).
+  Proof.
+    pose proof @wordToZ_size'' sz ltac:(trivial) (ZToWord _ z).
+    case (wordToZ_ZToWord' sz z) as [y Hy].
+    assert ( wordToZ (ZToWord sz z) =
+      (wordToZ (ZToWord sz z) +
+      2 ^ (Z.of_nat sz - 1))
+      mod (2*2 ^ (Z.of_nat sz - 1))
+      - 2 ^ (Z.of_nat sz - 1))
+    by (rewrite Z.mod_small; Lia.lia).
+    enough (2^Z.of_nat sz = 2 * 2 ^ (Z.of_nat sz - 1))
+      by congruence; clear -H.
+    rewrite pow2_times2; Lia.lia.
+  Qed.
+End ZScope.
+
 Lemma ZToWord_uwordToZ: forall sz (a: word sz),
     ZToWord sz (uwordToZ a) = a.
 Proof.
