@@ -2106,7 +2106,7 @@ Proof.
   rewrite NToWord_nat, Nnat.N2Nat.inj_sub, Npow2_nat.
   apply wordToNat_natToWord_2.
   pose (pow2_zero (S sz)).
-  omega.
+  lia.
 Qed.
 
 Lemma wones_pow2_minus_one: forall {sz}, wordToNat (wones sz) = pow2 sz - 1.
