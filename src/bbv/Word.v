@@ -2476,7 +2476,7 @@ Proof.
   rewrite roundTrip_1.
   omega.
 
-  eapply Nat.le_lt_trans; [| apply wordToNat_bound ].
+  eapply Nat.le_lt_trans; [| eapply wordToNat_bound ].
   rewrite wordToNat_natToWord_idempotent';
     [| erewrite <- roundTrip_1 at 1; apply wordToNat_bound ].
   apply wlt_lt in H.
@@ -5402,12 +5402,12 @@ Proof.
     pose proof (wordToZ_size' w2); destruct H1.
     split.
     + rewrite pow2_S_z.
-      etransitivity; [|apply Z.add_le_mono; eassumption].
+      etransitivity; [|eapply Z.add_le_mono; eassumption].
       rewrite <-Z.add_diag, Z.opp_add_distr.
       apply Z.add_le_mono;
         rewrite <-Z.opp_le_mono; apply Nat2Z.inj_le, pow2_le; omega.
     + rewrite pow2_S_z.
-      eapply Z.lt_le_trans; [apply Z.add_lt_mono; eassumption|].
+      eapply Z.lt_le_trans; [eapply Z.add_lt_mono; eassumption|].
       rewrite <-Z.add_diag.
       apply Z.add_le_mono; apply Nat2Z.inj_le, pow2_le; omega.
 Qed.
