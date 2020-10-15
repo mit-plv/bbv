@@ -17,9 +17,9 @@ before_script:
 
 env:
   - COQ_VERSION="master" COQ_PACKAGE="coq"        PPA="ppa:jgross-h/coq-master-daily"
-  - COQ_VERSION="8.12.0" COQ_PACKAGE="coq-8.12.0" PPA="ppa:jgross-h/many-coq-versions"
-  - COQ_VERSION="8.11.2" COQ_PACKAGE="coq-8.11.2" PPA="ppa:jgross-h/many-coq-versions"
-  - COQ_VERSION="8.10.2" COQ_PACKAGE="coq-8.10.2" PPA="ppa:jgross-h/many-coq-versions"
+  - COQ_VERSION="8.12.0" COQ_PACKAGE="coq-8.12.0" PPA="ppa:jgross-h/many-coq-versions-ocaml-4-05"
+  - COQ_VERSION="8.11.2" COQ_PACKAGE="coq-8.11.2" PPA="ppa:jgross-h/many-coq-versions-ocaml-4-05"
+  - COQ_VERSION="8.10.2" COQ_PACKAGE="coq-8.10.2" PPA="ppa:jgross-h/many-coq-versions-ocaml-4-05"
   - COQ_VERSION="8.9.1"  COQ_PACKAGE="coq-8.9.1"  PPA="ppa:jgross-h/many-coq-versions"
   - COQ_VERSION="8.8.2"  COQ_PACKAGE="coq-8.8.2"  PPA="ppa:jgross-h/many-coq-versions"
 
