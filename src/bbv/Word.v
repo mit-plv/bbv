@@ -23,6 +23,7 @@ Inductive word : nat -> Set :=
 | WO : word O
 | WS : bool -> forall n, word n -> word (S n).
 
+Declare Scope word_scope.
 Delimit Scope word_scope with word.
 Bind Scope word_scope with word.
 
@@ -39,7 +40,7 @@ Fixpoint wordToNat sz (w : word sz) : nat :=
     | WS true w' => S (wordToNat w' * 2)
   end.
 
-Fixpoint wordToNat' sz (w : word sz) : nat :=
+Definition wordToNat' sz (w : word sz) : nat :=
   match w with
     | WO => O
     | WS false w' => 2 * wordToNat w'
@@ -151,7 +152,7 @@ Proof.
   intros a; apply (shatter_word a).
 Qed.
 
-Hint Resolve shatter_word_0.
+Hint Resolve shatter_word_0 : core.
 
 Definition weq : forall sz (x y : word sz), {x = y} + {x <> y}.
   refine (fix weq sz (x : word sz) : forall y : word sz, {x = y} + {x <> y} :=
@@ -442,7 +443,7 @@ Definition wbit sz sz' (n : word sz') := natToWord sz (pow2 (wordToNat n)).
 (*! Facts *)
 
 Hint Rewrite div2_double div2_S_double: div2.
-Local Hint Resolve mod2_S_double mod2_double.
+Local Hint Resolve mod2_S_double mod2_double : core.
 
 Theorem eq_rect_word_offset : forall n n' offset w Heq,
   eq_rect n (fun n => word (offset + n)) w n' Heq =
@@ -1126,7 +1127,7 @@ Proof.
   reflexivity.
 Qed.
 
-Local Hint Extern 1 (@eq nat _ _) => lia.
+Local Hint Extern 1 (@eq nat _ _) => lia : core.
 
 Theorem mod2_S : forall n k,
   2 * k = S n
@@ -1258,7 +1259,7 @@ Proof.
   auto.
 Qed.
 
-Local Hint Extern 1 (_ <= _)%nat => lia.
+Local Hint Extern 1 (_ <= _)%nat => lia : core.
 
 Theorem wplus_assoc : forall sz (x y z : word sz), x ^+ (y ^+ z) = x ^+ y ^+ z.
   intros sz x y z *; repeat rewrite wplus_alt; unfold wplusN, wordBinN; intros.
@@ -2247,7 +2248,7 @@ Proof.
   assumption.
 Qed.
 
-Hint Resolve lt_word_le_nat.
+Hint Resolve lt_word_le_nat : core.
 
 Lemma wordToNat_natToWord_idempotent' : forall sz n,
   (n < pow2 sz)%nat
