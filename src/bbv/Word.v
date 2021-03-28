@@ -23,7 +23,7 @@ Inductive word : nat -> Set :=
 | WO : word O
 | WS : bool -> forall n, word n -> word (S n).
 
-Declare Scope word_scope.
+(*Declare Scope word_scope.*)
 Delimit Scope word_scope with word.
 Bind Scope word_scope with word.
 
@@ -580,7 +580,7 @@ Proof.
   pose proof (wordToNat_natToWord sz w).
   destruct H0; destruct H0.
   rewrite H0 in *; clear H0.
-  destruct x; lia.
+  destruct x; nia.
 Qed.
 
 Lemma natToWord_times2: forall sz x,
@@ -1980,9 +1980,9 @@ Theorem natToWord_inj : forall sz n m, natToWord sz n = natToWord sz m
     => let H0 := fresh in assert (H0 : a = b) by congruence; clear H H' H''; rename H0 into H
   end.
   assert (x = 0).
-  destruct x; auto.
+  destruct x; auto; try nia.
   assert (x0 = 0).
-  destruct x0; auto.
+  destruct x0; auto; try nia.
   subst; simpl in *; lia.
 Qed.
 
@@ -2292,6 +2292,7 @@ Proof.
   eapply le_trans.
   apply Nat.lt_le_incl.
   apply wordToNat_bound.
+  match goal with H : _ = right _ |- _ => clear H end.
   lia.
 Qed.
 
@@ -2398,10 +2399,10 @@ Proof.
   rewrite Nat.add_sub_assoc.
   lia.
 
-  remember (wordToNat_bound y); lia.
+  generalize dependent (wordToNat_bound y); intros; lia.
 
   simpl. rewrite <- plus_n_O.
-  rewrite Nat.add_sub_assoc; [| remember (wordToNat_bound y); lia ].
+  rewrite Nat.add_sub_assoc; [| generalize dependent (wordToNat_bound y); intros; lia ].
   rewrite plus_comm.
   rewrite <- Nat.add_sub_assoc.
   lia.
@@ -2412,9 +2413,9 @@ Proof.
   apply lt_wlt; auto.
 
   apply Nat.sub_lt.
-  remember (wordToNat_bound y); lia.
+  generalize dependent (wordToNat_bound y); intros; lia.
 
-  assert (wordToNat y <> 0); try lia.
+  assert (wordToNat y <> 0); [ | lia ].
 
   assert (wordToN y <> wordToN (natToWord sz 0)).
   unfold not in *. intros. apply n.
