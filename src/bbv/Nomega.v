@@ -25,7 +25,7 @@ Qed.
 Theorem Nneq_out : forall n m,
   n <> m
   -> nat_of_N n <> nat_of_N m.
-  intuition.
+  intuition; zify; intuition.
 Qed.
 
 Theorem Nlt_out : forall n m, n < m
