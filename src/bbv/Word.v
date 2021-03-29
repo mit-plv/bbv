@@ -1405,10 +1405,10 @@ Theorem wmult_plus_distr : forall sz (x y z : word sz), (x ^+ y) ^* z = (x ^* z)
     (wordToNat y * wordToNat z - x2 * pow2 sz))
     with (wordToNat x * wordToNat z + wordToNat y * wordToNat z - x1 * pow2 sz - x2 * pow2 sz).
   repeat rewrite drop_sub; auto with arith.
-  try rewrite (mult_comm x0).
-  try rewrite (mult_comm (wordToNat x + wordToNat y)).
-  try rewrite <- (mult_assoc (wordToNat z)).
-  auto with arith;
+  all: try rewrite (mult_comm x0);
+    try rewrite (mult_comm (wordToNat x + wordToNat y));
+    try rewrite <- (mult_assoc (wordToNat z));
+    auto with arith;
     generalize dependent (wordToNat x * wordToNat z);
     generalize dependent (wordToNat y * wordToNat z);
     intros;
