@@ -26,7 +26,7 @@ Proof.
 Qed.
 
 Lemma mod_0_r: forall (m: Z),
-    m mod 0 = 0.
+    m mod 0 = match (1 mod 0) with | 0 => 0 | _ => m end.
 Proof.
   intros. destruct m; reflexivity.
 Qed.
@@ -71,7 +71,7 @@ Qed.
 
 Lemma mod_pow2_same_cases: forall a n,
     a mod 2 ^ n = a ->
-    2 ^ n = 0 /\ a = 0 \/ 0 <= a < 2 ^ n.
+    2 ^ n = 0 \/ 0 <= a < 2 ^ n.
 Proof.
   intros.
   assert (n < 0 \/ 0 <= n) as C by lia. destruct C as [C | C].

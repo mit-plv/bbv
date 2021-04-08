@@ -527,7 +527,7 @@ Proof.
 Qed.
 
 Lemma mod_0_r: forall (m: nat),
-    m mod 0 = 0.
+    m mod 0 = match (1 mod 0) with | 0 => 0 | _ => m end.
 Proof.
   intros. reflexivity.
 Qed.
@@ -538,7 +538,7 @@ Lemma sub_mod_0: forall (a b m: nat),
     (a - b) mod m = 0.
 Proof.
   intros. assert (m = 0 \/ m <> 0) as C by lia. destruct C as [C | C].
-  - subst. apply mod_0_r.
+  - subst. rewrite mod_0_r in *. simpl in *. now subst.
   - assert (a - b = 0 \/ b < a) as D by lia. destruct D as [D | D].
     + rewrite D. apply Nat.mod_0_l. assumption.
     + apply Nat2Z.inj. simpl.
