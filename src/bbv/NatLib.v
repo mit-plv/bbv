@@ -253,24 +253,12 @@ Proof.
   lia.
 Qed.
 
-Lemma pow2_inc : forall n m,
-  0 < n -> n < m ->
-    pow2 n < pow2 m.
+Lemma pow2_inc : forall n m, n < m -> pow2 n < pow2 m.
 Proof.
-  intros.
-  generalize dependent n; intros.
-  induction m; simpl.
-  intros. inversion H0.
-  unfold lt in H0.
-  rewrite Nat.add_0_r.
-  inversion H0.
-  apply Nat.lt_add_pos_r.
-  apply zero_lt_pow2.
-  apply Nat.lt_trans with (pow2 m).
-  apply IHm.
-  exact H2.
-  apply Nat.lt_add_pos_r.
-  apply zero_lt_pow2.
+  intros n m; revert n; induction m as [|m IH]; intros n nLm; [lia|].
+  destruct n; [now apply one_lt_pow2|].
+  assert (H : pow2 n < pow2 m) by (apply IH; lia).
+  simpl; lia.
 Qed.
 
 Lemma pow2_S: forall x, pow2 (S x) = 2 * pow2 x.
