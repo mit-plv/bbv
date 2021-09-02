@@ -755,7 +755,7 @@ Proof.
   erewrite IHa.
   auto.
 
-  Grab Existential Variables.
+  Unshelve.
   lia.
 Qed.
 
@@ -829,7 +829,7 @@ Proof.
   simpl.
   shatterer.
 
-  Grab Existential Variables.
+  Unshelve.
   lia.
 Qed.
 
@@ -2637,7 +2637,7 @@ Proof.
   eq_rect_simpl.
   rewrite eq_rect_combine.
   apply split1_combine.
-  Grab Existential Variables. lia.
+  Unshelve. lia.
 Qed.
 
 Theorem wrshift_gt : forall sz n (w : word sz), (n > sz)%nat ->
@@ -2655,7 +2655,7 @@ Proof.
   eq_rect_simpl.
   rewrite eq_rect_combine_assoc', split2_combine.
   reflexivity.
-  Grab Existential Variables. lia.
+  Unshelve. lia.
 Qed.
 
 Theorem wlshift_bitwp : forall sz (w1 w2 : word sz) f n,
