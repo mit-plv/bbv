@@ -14,7 +14,9 @@ Proof.
   auto.
 Qed.
 
+#[global]
 Hint Rewrite eq_rect_nat_double.
+#[global]
 Hint Rewrite <- (eq_rect_eq_dec eq_nat_dec).
 
 Ltac generalize_proof :=

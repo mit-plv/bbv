@@ -442,6 +442,7 @@ Definition wbit sz sz' (n : word sz') := natToWord sz (pow2 (wordToNat n)).
 
 (*! Facts *)
 
+#[global]
 Hint Rewrite div2_double div2_S_double: div2.
 Local Hint Resolve mod2_S_double mod2_double : core.
 
@@ -531,6 +532,7 @@ Theorem roundTrip_0 : forall sz, wordToNat (natToWord sz 0) = 0.
   induction sz; simpl; intuition.
 Qed.
 
+#[global]
 Hint Rewrite roundTrip_0 : wordToNat.
 
 Lemma wordToNat_natToWord' : forall sz w, exists k, wordToNat (natToWord sz w) + k * pow2 sz = w.
@@ -635,8 +637,11 @@ Theorem split2_combine : forall sz1 sz2 (w : word sz1) (z : word sz2),
   induction sz1; shatterer.
 Qed.
 
+#[global]
 Hint Rewrite combine_split.
+#[global]
 Hint Rewrite split1_combine.
+#[global]
 Hint Rewrite split2_combine.
 
 Theorem combine_assoc : forall n1 (w1 : word n1) n2 n3 (w2 : word n2) (w3 : word n3) Heq,

@@ -5,6 +5,7 @@ Require Import bbv.ZLib.
    - they are equalities about Z where the rhs is a simplification of the lhs
    - they have no preconditions
    - there should be no reason you would not want to rewrite with them *)
+#[global]
 Hint Rewrite
      Z.land_diag
      Z.lor_diag
