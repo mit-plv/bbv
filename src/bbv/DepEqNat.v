@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 
 (* This file defines nat_cast, an alternative to eq_rect which works only for type nat instead
    of any type A.

@@ -1,4 +1,6 @@
+Set Loose Hint Behavior "Strict".
 (* This should be in the Coq library *)
+Require Import Coq.Classes.Morphisms Coq.Classes.Morphisms_Prop.
 Require Import Coq.Arith.Arith Coq.NArith.NArith Coq.ZArith.ZArith.
 Require Import Coq.micromega.Lia.
 

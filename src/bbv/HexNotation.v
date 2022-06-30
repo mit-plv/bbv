@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 
 (* Adapted from http://poleiro.info/posts/2013-04-03-parse-errors-as-type-errors.html,
    https://github.com/arthuraa/poleiro/blob/master/theories/ForceOption.v

@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 Require Import Coq.NArith.NArith.
 
 Local Open Scope N_scope.

@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 Require Import Coq.Arith.Peano_dec.
 Require Import Coq.Logic.Eqdep Coq.Logic.Eqdep_dec Coq.Program.Equality.
 
