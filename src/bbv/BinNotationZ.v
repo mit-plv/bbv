@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 Require Export bbv.BinNotation.
 Require Export bbv.ReservedNotations.
 Require Import Coq.ZArith.BinInt.

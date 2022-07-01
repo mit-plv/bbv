@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 (* Word.v defines notations for words by first opening word_scope, and then closing it again,
    to prevent notation clashes.
    It does, however, bind word_scope to the type word, so whenever an expression of type word

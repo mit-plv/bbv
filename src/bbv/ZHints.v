@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 Require Import Coq.ZArith.ZArith.
 Require Import bbv.ZLib.
 

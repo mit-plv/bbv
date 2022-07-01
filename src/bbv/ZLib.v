@@ -1,4 +1,7 @@
+Set Loose Hint Behavior "Strict".
+Require Import Coq.Classes.Morphisms.
 Require Import Coq.ZArith.BinInt.
+Import Coq.ZArith.BinInt.Z. (* for hints *)
 Require Import Coq.micromega.Lia.
 Require Import Coq.ZArith.ZArith.
 

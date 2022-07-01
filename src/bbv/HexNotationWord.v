@@ -1,3 +1,4 @@
+Set Loose Hint Behavior "Strict".
 Require Export bbv.HexNotation.
 Require Import bbv.WordScope.
 Require bbv.BinNotation.

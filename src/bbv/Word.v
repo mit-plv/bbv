@@ -1,5 +1,7 @@
+Set Loose Hint Behavior "Strict".
 (** Fixed precision machine words *)
 
+Require Import Coq.Classes.Morphisms Coq.Classes.Morphisms_Prop Coq.Classes.Equivalence Coq.Arith.PeanoNat Coq.ZArith.BinInt (* for hints *).
 Require Import Coq.Arith.Arith Coq.Arith.Div2 Coq.NArith.NArith Coq.Bool.Bool Coq.ZArith.ZArith.
 Require Import Coq.Logic.Eqdep_dec Coq.Logic.EqdepFacts.
 Require Import Coq.Program.Tactics Coq.Program.Equality.
@@ -12,6 +14,7 @@ Require Export bbv.DepEq bbv.DepEqNat.
 Require Import bbv.ReservedNotations.
 
 Require Import Coq.micromega.Lia.
+Local Existing Instances N.le_preorder Nat.add_wd Nat.div_wd Nat.divide_reflexive Nat.le_preorder Nat.le_wd Nat.lt_wd Nat.mod_wd Nat.mul_wd Nat.sub_wd Z.le_wd Z.le_preorder Z.lt_strorder.
 
 Set Implicit Arguments.
 
@@ -152,7 +155,7 @@ Proof.
   intros a; apply (shatter_word a).
 Qed.
 
-Hint Resolve shatter_word_0 : core.
+Global Hint Resolve shatter_word_0 : core.
 
 Definition weq : forall sz (x y : word sz), {x = y} + {x <> y}.
   refine (fix weq sz (x : word sz) : forall y : word sz, {x = y} + {x <> y} :=
@@ -1921,7 +1924,7 @@ Proof.
 Qed.
 
 
-Hint Resolve word_neq lt_le eq_le sub_0_eq le_neq_lt : worder.
+Global Hint Resolve word_neq lt_le eq_le sub_0_eq le_neq_lt : worder.
 
 Ltac shatter_word x :=
   match type of x with
@@ -2248,7 +2251,7 @@ Proof.
   assumption.
 Qed.
 
-Hint Resolve lt_word_le_nat : core.
+Global Hint Resolve lt_word_le_nat : core.
 
 Lemma wordToNat_natToWord_idempotent' : forall sz n,
   (n < pow2 sz)%nat
