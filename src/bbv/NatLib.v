@@ -59,7 +59,7 @@ Section strong.
 
   Lemma strong' : forall n m, m <= n -> P m.
     induction n; simpl; intuition; apply PH; intuition.
-    elimtype False; lia.
+    exfalso; lia.
   Qed.
 
   Theorem strong : forall n, P n.
