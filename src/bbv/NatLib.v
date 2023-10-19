@@ -3,7 +3,6 @@ Require Import Coq.Classes.Morphisms Coq.Classes.Morphisms_Prop.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Import Coq.Arith.PeanoNat.Nat.
-Require Import Coq.Arith.Div2.
 Require Import Coq.micromega.Lia.
 Require Import Coq.NArith.NArith.
 Require Import Coq.ZArith.ZArith.
@@ -151,7 +150,8 @@ Proof.
     + simpl. lia.
     + destruct b.
       * simpl. lia.
-      * simpl. apply lt_n_S. apply IHa. lia.
+      * simpl.
+        apply Nat.lt_succ_r. apply IHa. lia.
 Qed.
 
 (* otherwise b is made implicit, while a isn't, which is weird *)
@@ -192,7 +192,7 @@ Proof.
   induction c; intros.
   rewrite Nat.mul_1_r; auto.
   rewrite Nat.mul_succ_r.
-  apply lt_plus_trans.
+  apply Nat.lt_lt_add_r.
   apply IHc; auto.
 Qed.
 
@@ -345,25 +345,24 @@ Proof.
   replace (k + k) with (2 * k) by lia.
   apply div2_double.
   replace (S n + 2 * k) with (S (n + 2 * k)) by lia.
-  destruct (Even.even_or_odd n).
-  - rewrite <- even_div2.
-    rewrite <- even_div2 by auto.
+  destruct (Even_Odd_dec n).
+  - rewrite <- Even_div2.
+    rewrite <- Even_div2 by auto.
     apply IHn.
-    apply Even.even_even_plus; auto.
-    apply Even.even_mult_l; repeat constructor.
-
-  - rewrite <- odd_div2.
-    rewrite <- odd_div2 by auto.
+    apply Even_Even_add; auto.
+    apply Even_mul_l. now exists 1.
+  - rewrite <- Odd_div2.
+    rewrite <- Odd_div2 by auto.
     rewrite IHn.
     lia.
-    apply Even.odd_plus_l; auto.
-    apply Even.even_mult_l; repeat constructor.
+    apply Odd_add_l; auto.
+    now exists k.
 Qed.
 
 Lemma pred_add:
   forall n, n <> 0 -> pred n + 1 = n.
 Proof.
-  intros; rewrite pred_of_minus; lia.
+  intros n Hn. rewrite add_1_r. exact (succ_pred n Hn).
 Qed.
 
 Lemma pow2_zero: forall sz, (pow2 sz > 0)%nat.
@@ -411,7 +410,7 @@ Proof.
   rewrite pow2_add_mul.
   pose proof (pow2_zero x).
   replace (pow2 n) with (pow2 n * 1) at 1 by lia.
-  apply mult_le_compat_l.
+  apply mul_le_mono_l.
   lia.
 Qed.
 
@@ -502,7 +501,7 @@ Proof.
   pose proof Nat.div_mul_cancel_l as A. specialize (A a 1 b).
   replace (b * 1) with b in A by lia.
   rewrite Nat.div_1_r in A.
-  rewrite mult_comm.
+  rewrite mul_comm.
   rewrite <- Nat.divide_div_mul_exact; try assumption.
   - apply A; congruence.
   - apply Nat.mod_divide; assumption.
