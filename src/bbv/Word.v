@@ -2103,8 +2103,8 @@ Qed.
 
 Lemma wones_pow2_minus_one: forall {sz}, wordToNat (wones sz) = pow2 sz - 1.
 Proof.
-  induction sz; simpl; auto.
-  rewrite IHsz; pose (pow2_zero sz).
+  induction sz; simpl; auto;
+  rewrite IHsz; pose (pow2_zero sz);
   lia.
 Qed.
 
@@ -5238,9 +5238,9 @@ Proof.
       }
       remember (wordToN (wneg w)) as ww; clear Heqww.
       destruct ww; simpl.
-      * split; try lia.
-        change 0%Z with (Z.of_nat 0).
-        apply Nat2Z.inj_lt.
+      * split; try lia;
+        change 0%Z with (Z.of_nat 0);
+        apply Nat2Z.inj_lt;
         apply zero_lt_pow2.
       * split.
         { rewrite <-Pos2Z.opp_pos, <-N2Z.inj_pos.
@@ -5260,9 +5260,9 @@ Proof.
         }
   - apply eq_sym, wmsb_false_bound in Heqmsb.
     destruct (wordToN w); simpl.
-    * split; try lia.
-      change 0%Z with (Z.of_nat 0).
-      apply Nat2Z.inj_lt.
+    * split; try lia;
+      change 0%Z with (Z.of_nat 0);
+      apply Nat2Z.inj_lt;
       apply zero_lt_pow2.
     * split.
       { etransitivity.
@@ -6427,9 +6427,9 @@ Proof.
   rewrite wordToN_to_nat.
   rewrite Nnat.Nat2N.id.
   simpl.
-  rewrite wordToNat_natToWord_idempotent'; auto.
-  pose proof (pow2_zero sz).
-  unfold Pos.to_nat; simpl.
+  rewrite wordToNat_natToWord_idempotent'; auto;
+  pose proof (pow2_zero sz);
+  unfold Pos.to_nat; simpl;
   lia.
 Qed.
 
@@ -6816,8 +6816,8 @@ Proof.
   rewrite wordToNat_combine; simpl.
   rewrite Nat.mul_0_r, Nat.add_0_r.
   rewrite wordToNat_natToWord_idempotent'; auto.
-  destruct sz; simpl; try lia.
-  pose proof (pow2_zero sz).
+  destruct sz; simpl; try lia;
+  pose proof (pow2_zero sz);
   lia.
 Qed.
 
