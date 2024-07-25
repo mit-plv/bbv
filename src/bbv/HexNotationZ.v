@@ -1,7 +1,7 @@
 Set Loose Hint Behavior "Strict".
 Require Export bbv.HexNotation.
 Require Export bbv.ReservedNotations.
-Require Import Coq.ZArith.BinInt.
+From Coq Require Import BinInt.
 
 Notation "'Ox' a" := (Z.of_N (hex a)).
 

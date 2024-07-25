@@ -1,7 +1,7 @@
 Set Loose Hint Behavior "Strict".
 Require Export bbv.BinNotation.
 Require Export bbv.ReservedNotations.
-Require Import Coq.ZArith.BinInt.
+From Coq Require Import BinInt.
 
 Notation "'Ob' a" := (Z.of_N (bin a)).
 

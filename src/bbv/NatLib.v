@@ -1,11 +1,11 @@
 Set Loose Hint Behavior "Strict".
 Require Import Coq.Classes.Morphisms Coq.Classes.Morphisms_Prop.
 Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Import Coq.Arith.PeanoNat.Nat.
-Require Import Coq.micromega.Lia.
-Require Import Coq.NArith.NArith.
-Require Import Coq.ZArith.ZArith.
+From Coq Require Import Arith.
+Import PeanoNat.Nat.
+From Coq Require Import Lia.
+From Coq Require Import NArith.
+From Coq Require Import ZArith.
 Require Import bbv.N_Z_nat_conversions.
 Require Export bbv.Nomega.
 

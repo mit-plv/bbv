@@ -1,5 +1,5 @@
 Set Loose Hint Behavior "Strict".
-Require Import Coq.ZArith.ZArith.
+From Coq Require Import ZArith.
 Require Import bbv.ZLib.
 
 (* Properties of the lemmas in this list:

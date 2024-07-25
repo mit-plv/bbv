@@ -1,19 +1,19 @@
 Set Loose Hint Behavior "Strict".
 (** Fixed precision machine words *)
 
-Require Import Coq.Classes.Morphisms Coq.Classes.Morphisms_Prop Coq.Classes.Equivalence Coq.Arith.PeanoNat Coq.ZArith.BinInt (* for hints *).
-Require Import Coq.Arith.Arith Coq.NArith.NArith Coq.Bool.Bool Coq.ZArith.ZArith.
-Require Import Coq.Logic.Eqdep_dec Coq.Logic.EqdepFacts.
-Require Import Coq.Program.Tactics Coq.Program.Equality.
-Require Import Coq.setoid_ring.Ring.
-Require Import Coq.setoid_ring.Ring_polynom.
+From Coq Require Import Morphisms Morphisms_Prop Equivalence PeanoNat BinInt (* for hints *).
+From Coq Require Import Arith NArith Bool ZArith.
+From Coq Require Import Eqdep_dec EqdepFacts.
+From Coq.Program Require Import Tactics Equality.
+From Coq Require Import Ring.
+From Coq Require Import Ring_polynom.
 Require Import bbv.Nomega.
 Require Export bbv.ZLib bbv.NatLib bbv.NLib.
 Require Export bbv.N_Z_nat_conversions.
 Require Export bbv.DepEq bbv.DepEqNat.
 Require Import bbv.ReservedNotations.
 
-Require Import Coq.micromega.Lia.
+From Coq Require Import Lia.
 Local Existing Instances N.le_preorder Nat.add_wd Nat.div_wd Nat.divide_reflexive Nat.le_preorder Nat.le_wd Nat.lt_wd Nat.mod_wd Nat.mul_wd Nat.sub_wd Z.le_wd Z.le_preorder Z.lt_strorder.
 
 Set Implicit Arguments.
