@@ -7,14 +7,12 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
         env:
         - { COQ_VERSION: "master", COQ_PACKAGE: "coq"       , PPA: "ppa:jgross-h/coq-master-daily"             }
-        - { COQ_VERSION: "8.17.1", COQ_PACKAGE: "coq-8.17.1", PPA: "ppa:jgross-h/many-coq-versions-ocaml-4-11" }
-        - { COQ_VERSION: "8.16.1", COQ_PACKAGE: "coq-8.16.1", PPA: "ppa:jgross-h/many-coq-versions-ocaml-4-11" }
       fail-fast: false
 
     env: ${{ matrix.env }}
