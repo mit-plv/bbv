@@ -18,5 +18,3 @@ Reserved Notation "$ n" (at level 9, n at level 9, format "$ n").
 Reserved Notation "# n" (at level 0).
 Reserved Notation "l ^<< r" (at level 35).
 Reserved Notation "l ^>> r" (at level 35).
-Reserved Notation "w ~ 1" (at level 7, left associativity, format "w '~' '1'").
-Reserved Notation "w ~ 0" (at level 7, left associativity, format "w '~' '0'").
