@@ -2,8 +2,8 @@ Set Loose Hint Behavior "Strict".
 (* Make [lia] work for [N] *)
 
 Require Import Coq.Bool.Bool Coq.Classes.Morphisms.
-Require Import Coq.Arith.Arith Coq.micromega.Lia Coq.NArith.NArith.
-Require Import Coq.ZArith.ZArith.
+From Coq Require Import Arith Lia NArith.
+From Coq Require Import ZArith.
 
 Local Open Scope N_scope.
 
