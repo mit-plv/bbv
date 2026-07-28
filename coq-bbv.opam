@@ -29,4 +29,7 @@ depends: [
   "ocaml"
   "coq" {>= "8.16" | = "dev"}
 ]
+conflict-class: [
+  "coq-bbv"
+]
 synopsis: "An implementation of bitvectors in Coq."
